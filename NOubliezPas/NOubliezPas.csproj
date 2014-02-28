@@ -39,14 +39,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\GtkSharp\2.12\lib\gtk-sharp-2.0\pango-sharp.dll</HintPath>
     </Reference>
-    <Reference Include="sfmlnet-audio-2">
-      <HintPath>..\extlibs\SFML.Net-2.1\lib\sfmlnet-audio-2.dll</HintPath>
+    <Reference Include="sfmlnet-audio-2, Version=2.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\extlibs\SFML.Net-2.1\lib\sfmlnet-audio-2.dll</HintPath>
     </Reference>
-    <Reference Include="sfmlnet-graphics-2">
-      <HintPath>..\extlibs\SFML.Net-2.1\lib\sfmlnet-graphics-2.dll</HintPath>
+    <Reference Include="sfmlnet-graphics-2, Version=2.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\extlibs\SFML.Net-2.1\lib\sfmlnet-graphics-2.dll</HintPath>
     </Reference>
-    <Reference Include="sfmlnet-window-2">
-      <HintPath>..\extlibs\SFML.Net-2.1\lib\sfmlnet-window-2.dll</HintPath>
+    <Reference Include="sfmlnet-window-2, Version=2.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\extlibs\SFML.Net-2.1\lib\sfmlnet-window-2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

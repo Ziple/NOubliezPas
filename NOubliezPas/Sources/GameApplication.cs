@@ -72,7 +72,7 @@ namespace NOubliezPas
             window.Closed += new EventHandler(OnClose);
             window.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyPressed);
 
-            guiStyle = new GuiStyle();
+            guiStyle = GuiStyle.LoadFromFile("configihm.xml");
 
             activeComponent.Initialize();
             activeComponent.LoadContent();

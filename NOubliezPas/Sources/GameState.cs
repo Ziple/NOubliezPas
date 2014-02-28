@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using SFML.Audio;
+using SFML.Graphics;
 
 namespace NOubliezPas
 {
@@ -319,11 +320,13 @@ namespace NOubliezPas
     class Theme
     {
         String myName;
+        uint myPoints;
         List<Song> mySongs;
 
-        public Theme( String name, List<Song> songs )
+        public Theme( String name, uint points, List<Song> songs )
         {
             myName = name;
+            myPoints = points;
             mySongs = songs;
         }
 
@@ -350,6 +353,8 @@ namespace NOubliezPas
         public static Theme Load(XmlReader reader)
         {
             String name = "";
+            uint points = 0;
+
             List<Song> songs = new List<Song>();
             while (reader.Read())
             {
@@ -362,6 +367,10 @@ namespace NOubliezPas
                                 String rname = reader.GetAttribute("nom");
                                 if (rname != null)
                                     name = rname;
+
+                                String rpts = reader.GetAttribute("points");
+                                if (rpts != null)
+                                    points = UInt32.Parse(rpts);
                             }
                             else if (reader.Name == "chanson")
                             {
@@ -386,12 +395,17 @@ namespace NOubliezPas
                 }
             }
 
-            return new Theme(name, songs);
+            return new Theme(name, points, songs);
         }
 
         public String Name
         {
             get { return myName; }
+        }
+
+        public uint Points
+        {
+            get { return myPoints; }
         }
 
         public List<Song> Songs
@@ -414,18 +428,21 @@ namespace NOubliezPas
     class Player
     {
         public String Name = "";
+        public String PhotoSrc = null;
         public int Score = 0;
         public List<Theme> ChosenThemes = new List<Theme>();
         public bool DidBlindTest = false;
 
-        public Player( String name )
+        public Player( String name, String photosrc )
         {
             Name = name;
+            PhotoSrc = photosrc;
         }
 
         public static Player Load(XmlReader reader)
         {
             String name = null;
+            String photo = null;
 
             while (reader.Read())
             {
@@ -433,12 +450,16 @@ namespace NOubliezPas
                 {
                     case XmlNodeType.Element:
                         if (reader.Name == "joueur")
+                        {
                             name = reader.GetAttribute("nom");
+                            photo = reader.GetAttribute("photosrc");
+                            photo = Path.GetFullPath(photo);
+                        }
                         break;
                 }
             }
 
-            return new Player(name);
+            return new Player(name, photo);
         }
     }
     #endregion

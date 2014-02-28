@@ -22,6 +22,7 @@ namespace kT.GUI
 	public class TextString
 	{
 		string stringText = null;
+        uint characterSize;
 
 		public List<KeyValuePair<TextStyle, string>> formatedText = new List<KeyValuePair<TextStyle, string>>();
 
@@ -30,8 +31,9 @@ namespace kT.GUI
 			Text = text;
 		}
 
-        public TextString(string text, TextStyle style)
+        public TextString(string text, TextStyle style, uint size)
         {
+            characterSize = size;
             if( style == TextStyle.Bold )
                 Text = "<b>" + text + "</b>";
             else if( style == TextStyle.Italic )

@@ -16,6 +16,8 @@ namespace kT.GUI
 	{
 		List<Widget> widgets = new List<Widget>();
 
+        bool resizingAllowed = true;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -135,6 +137,12 @@ namespace kT.GUI
 
 			return null;
 		}
+
+        public override void EndChildResize(Widget child, Vector2f size)
+        {
+            base.EndChildResize(child, size);
+            updatePositions();
+        }
 
 		/// <summary>
 		/// Draws the widgets in the layout.

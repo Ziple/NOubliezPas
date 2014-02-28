@@ -8,6 +8,8 @@ namespace kT.GUI
 	{
         DCFont myFont;
         string myText;
+        uint myTextSize = 30;
+
         TextStyle myStyle;
 
 		Color myTextColor = Color.White;
@@ -25,13 +27,14 @@ namespace kT.GUI
 			Manager.RegisterWidgetType("BasicLabel", "Widget");
 		}
 
-		public BasicLabel(UIManager manager_, Widget parent_, DCFont font, TextStyle style, Color color, string str) :
+		public BasicLabel(UIManager manager_, Widget parent_, DCFont font, TextStyle style, Color color, string str, uint size = 30 ) :
 			base(manager_, parent_)
 		{
 			Manager.RegisterWidgetType("BasicLabel", "Widget");
 
             myFont = font;
             myText = str;
+            myTextSize = size;
             myStyle = style;
             myTextColor = color;
             updateSize();
@@ -73,7 +76,7 @@ namespace kT.GUI
 			}
 			else
 			{
-				Vector2f size = myFont.MeasureString( new TextString(myText, myStyle) );
+				Vector2f size = myFont.MeasureString( new TextString(myText, myStyle, myTextSize) );
 				myInnerTextSize = new Vector2f((int)size.X, (int)size.Y); //1 pixel rounded... Don't care!
 				Resize(myInnerTextSize);
 			}
@@ -83,7 +86,7 @@ namespace kT.GUI
 		{
 			base.OnDraw(drawEvent);
 
-            Text myTextStr = new Text(myText, myFont.Font);
+            Text myTextStr = new Text(myText, myFont.Font, myTextSize);
             myTextStr.Position = Position;
 
             Text.Styles st = Text.Styles.Regular;
@@ -104,6 +107,7 @@ namespace kT.GUI
 	{
 		DCFont myFont = null;
 		string myText = null;
+        uint myCharacterSize;
 		BasicLabel[] myBasicLabels = null;
 		Vector2f myInnerTextSize = new Vector2f(0f,0f);
 
@@ -119,10 +123,11 @@ namespace kT.GUI
 			Manager.RegisterWidgetType("Label", "Widget");
 		}
 
-		public Label(UIManager manager_, Widget parent_, DCFont font, string str) :
+		public Label(UIManager manager_, Widget parent_, DCFont font, string str, uint size = 30 ) :
 			base(manager_, parent_)
 		{
 			Manager.RegisterWidgetType("Label", "Widget");
+            myCharacterSize = size;
 			Font = font;
 			Text = str;
 		}
@@ -172,7 +177,7 @@ namespace kT.GUI
 
 			for (int i = 0; i < formatedText.Count; i++)
 			{
-				myBasicLabels[i] = new BasicLabel(Manager, this, Font, formatedText[i].Key, TextColor, formatedText[i].Value);
+				myBasicLabels[i] = new BasicLabel(Manager, this, Font, formatedText[i].Key, TextColor, formatedText[i].Value, myCharacterSize );
 				myBasicLabels[i].Visible = true;
 				myBasicLabels[i].Position = pos;
 

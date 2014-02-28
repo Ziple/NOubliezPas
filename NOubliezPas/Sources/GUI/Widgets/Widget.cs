@@ -149,7 +149,15 @@ namespace kT.GUI
 		public virtual Vector2f Position
 		{
 			get { return new Vector2f( myBoundingRectangle.Left, myBoundingRectangle.Top ); }
-            set { myBoundingRectangle.Left = value.X; myBoundingRectangle.Top = value.Y; Resize(Size); }
+            set {
+                myBoundingRectangle.Left = value.X;
+                myBoundingRectangle.Top = value.Y;
+
+                // It is very important to just notify the parent
+                // and not to generate a resizing event to avoid infinite recursions.
+                if (Parent != null)
+                    Parent.ResizeForChild(this, Size);
+            }
 		}
 
         /// <summary>
@@ -302,6 +310,15 @@ namespace kT.GUI
 			return false;
 		}
 
+        /// <summary>
+        /// Called when the child has finished its resize operation.
+        /// </summary>
+        /// <param name="child"></param>
+        /// <param name="size"></param>
+        public virtual void EndChildResize(Widget child, Vector2f size)
+        {
+        }
+
 		/// <summary>
 		/// Tries to resize the widget to the new size.
 		/// </summary>
@@ -320,8 +337,13 @@ namespace kT.GUI
 				OnResizeEvent(ev);
 				if (ev.Accepted)
 				{
-					if ((Parent != null && Parent.ResizeForChild(this, newSize)) || Parent == null)
-						DoResize(newSize);
+                    if ((Parent != null && Parent.ResizeForChild(this, newSize)) || Parent == null)
+                    {
+                        DoResize(newSize);
+
+                        if (Parent != null)
+                            Parent.EndChildResize(this, newSize);
+                    }
 				}
 			}
 			return Size;
