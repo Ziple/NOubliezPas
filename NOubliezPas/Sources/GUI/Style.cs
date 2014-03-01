@@ -10,6 +10,12 @@ using System.Xml;
 
 namespace NOubliezPas
 {
+    enum TextureDisplayMode
+    {
+        Stretch,
+        Center
+    }
+
     class FrameTexturesLoader
     {
         public static Texture[] Load(XmlReader reader)
@@ -87,8 +93,12 @@ namespace NOubliezPas
     class ThemeSelectionMenuStyle
     {
         public Color BackgroundColor;
+        public Texture BackgroundImage;
+        public TextureDisplayMode BackgroundDisplayMode;
         public Texture[] LabelsTextures;
+        public Texture[] HoveredLabelsTextures;
         public Texture[] ScoresTextures;
+        public Texture[] HoveredScoresTextures;
         public Texture[] PlayersNamesTextures;
         public Texture[] PlayersPicsTextures;
         public float ThemesLabelsBottomSpace;
@@ -97,13 +107,19 @@ namespace NOubliezPas
         public float PlayersSpace;
         public Vector2f PicsSize;
         public Font Font;
+        public Color FontNormalColor;
+        public Color FontHoveredColor;
         public uint FontSize;
 
 
         public ThemeSelectionMenuStyle(
             Color backgroundColor,
+            Texture backgroundImage,
+            TextureDisplayMode backgroundDisplayMode,
             Texture[] labelsTextures,
+            Texture[] hoveredLabelsTextures,
             Texture[] scoresTextures,
+            Texture[] hoveredScoresTextures,
             Texture[] playersNamesTextures,
             Texture[] playersPicsTextures,
             float themesLabelsBottomSpace,
@@ -112,28 +128,47 @@ namespace NOubliezPas
             float playersSpace,
             Vector2f picsSize,
             Font font,
+            Color fontNormalColor,
+            Color fontHoveredColor,
             uint fontSize
             )
         {
             BackgroundColor = backgroundColor;
+            BackgroundImage = backgroundImage;
+            BackgroundDisplayMode = backgroundDisplayMode;
+
             LabelsTextures = labelsTextures;
+            HoveredLabelsTextures = hoveredLabelsTextures;
+
             ScoresTextures = scoresTextures;
+            HoveredScoresTextures = hoveredScoresTextures;
+
             PlayersNamesTextures = playersNamesTextures;
             PlayersPicsTextures = playersPicsTextures;
+
             ThemesLabelsBottomSpace = themesLabelsBottomSpace;
             ThemesListRightSpace = themesListRightSpace;
+
             PlayersPhotoSpace = playersPhotoSpace;
             PlayersSpace = playersSpace;
             PicsSize = picsSize;
+
             Font = font;
+            FontNormalColor = fontNormalColor;
+            FontHoveredColor = fontHoveredColor;
             FontSize = fontSize;
         }
 
         public static ThemeSelectionMenuStyle Load(XmlReader reader)
         {
             Color backgroundColor = new Color(0, 255, 0);
+            Texture backgroundImage = null;
+            TextureDisplayMode backgroundDisplayMode = TextureDisplayMode.Stretch;
+
             Texture[] labelsTextures = null;
+            Texture[] hoveredLabelsTextures = null;
             Texture[] scoresTextures = null;
+            Texture[] hoveredScoresTextures = null;
             Texture[] playersNamesTextures = null;
             Texture[] playersPicsTextures = null;
             float themesLabelsBottomSpace = 10f;
@@ -142,6 +177,8 @@ namespace NOubliezPas
             float playersSpace = 5f;
             Vector2f picsSize = new Vector2f(256f, 256f);
             Font font = null;
+            Color fontNormalColor = new Color(255, 255, 255);
+            Color fontHoveredColor = new Color(0, 0, 0);
             uint fontSize = 14;
 
             while (reader.Read())
@@ -150,24 +187,31 @@ namespace NOubliezPas
                 {
                     case XmlNodeType.Element:
                         {
-                            if (reader.Name == "themeSelectionMenu")
+                            if (reader.Name == "backgroundColor")
+                                backgroundColor = GuiStyle.ParseColor(reader);
+                            else if (reader.Name == "backgroundImage")
                             {
-                                String r = reader.GetAttribute("backgroundColorR");
+                                String r = reader.GetAttribute("src");
                                 if (r != null)
-                                    backgroundColor.R = byte.Parse(r);
+                                    backgroundImage = new Texture(r);
 
-                                String g = reader.GetAttribute("backgroundColorG");
-                                if (g != null)
-                                    backgroundColor.G = byte.Parse(g);
-
-                                String b = reader.GetAttribute("backgroundColorB");
-                                if (b != null)
-                                    backgroundColor.B = byte.Parse(b);
+                                r = reader.GetAttribute("mode");
+                                if (r != null)
+                                {
+                                    if (r == "centered")
+                                        backgroundDisplayMode = TextureDisplayMode.Center;
+                                    else if (r == "stretched")
+                                        backgroundDisplayMode = TextureDisplayMode.Stretch;
+                                }
                             }
                             else if (reader.Name == "labelsTextures")
                                 labelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "hoveredLabelsTextures")
+                                hoveredLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "scoresTextures")
                                 scoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "hoveredScoresTextures")
+                                hoveredScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "playersNamesTextures")
                                 playersNamesTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "playersPicsTextures")
@@ -216,6 +260,10 @@ namespace NOubliezPas
                                 if (r != null)
                                     fontSize = uint.Parse(r);
                             }
+                            else if (reader.Name == "fontNormalColor")
+                                fontNormalColor = GuiStyle.ParseColor(reader);
+                            else if (reader.Name == "fontHoveredColor")
+                                fontHoveredColor = GuiStyle.ParseColor(reader);
                             break;
                         }
                 }
@@ -223,8 +271,12 @@ namespace NOubliezPas
 
             return new ThemeSelectionMenuStyle(
                 backgroundColor,
+                backgroundImage,
+                backgroundDisplayMode,
                 labelsTextures, 
+                hoveredLabelsTextures,
                 scoresTextures,
+                hoveredScoresTextures,
                 playersNamesTextures,
                 playersPicsTextures,
                 themesLabelsBottomSpace,
@@ -233,6 +285,8 @@ namespace NOubliezPas
                 playersSpace,
                 picsSize,
                 font,
+                fontNormalColor,
+                fontHoveredColor,
                 fontSize
             );
         }
@@ -270,6 +324,24 @@ namespace NOubliezPas
             scoreTextures[6] = new Texture("Content/Score/bordbasgauche.png");
             scoreTextures[7] = new Texture("Content/Score/milieubas.png");
             scoreTextures[8] = new Texture("Content/Score/bordbasdroit.png");
+        }
+
+        static public Color ParseColor(XmlReader reader)
+        {
+            Color ret = new Color(0, 0, 0);
+            String r = reader.GetAttribute("R");
+            if (r != null)
+                ret.R = byte.Parse(r);
+
+            String g = reader.GetAttribute("G");
+            if (g != null)
+                ret.G = byte.Parse(g);
+
+            String b = reader.GetAttribute("B");
+            if (b != null)
+                ret.B = byte.Parse(b);
+
+            return ret;
         }
 
         public static GuiStyle LoadFromFile(String filename)

@@ -26,9 +26,10 @@ namespace kT.GUI
 
 		public List<KeyValuePair<TextStyle, string>> formatedText = new List<KeyValuePair<TextStyle, string>>();
 
-		public TextString(string text)
+        public TextString(string text, uint size)
 		{
 			Text = text;
+            characterSize = size;
 		}
 
         public TextString(string text, TextStyle style, uint size)
@@ -164,6 +165,11 @@ namespace kT.GUI
 				formatedText = realFormatedText;
 			}
 		}
+
+        public uint CharacterSize
+        {
+            get { return characterSize; }
+        }
 
 		public List<KeyValuePair<TextStyle, string>> FormatedText
 		{

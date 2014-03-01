@@ -167,7 +167,7 @@ namespace kT.GUI
 		/// </summary>
 		protected void rebuildTextCache()
 		{
-			TextString textString = new TextString(myText);
+			TextString textString = new TextString(myText, myCharacterSize );
 			myBasicLabels = new BasicLabel[textString.FormatedText.Count];
 
 			List<KeyValuePair<TextStyle, string>> formatedText = textString.FormatedText;
@@ -209,6 +209,16 @@ namespace kT.GUI
 			else
 				Resize(myInnerTextSize);
 		}
+
+        public override void Expand()
+        {
+            base.Expand();
+
+            // We just center the label inside the parent
+            Vector2f newSize = Size;
+            Size = myInnerTextSize;
+            Position = new Vector2f(0.5f * (newSize.X - myInnerTextSize.X), 0.5f * (newSize.Y - myInnerTextSize.Y));
+        }
 
 		public override void OnDraw(DrawEvent drawEvent)
 		{

@@ -40,7 +40,7 @@ namespace kT.GUI
 				}
 				else
 				{
-                    Text textSlope = new Text(s.Value, Font);
+                    Text textSlope = new Text(s.Value, Font, str.CharacterSize);
                     Text.Styles textStyle = Text.Styles.Regular;
                     if ((s.Key & TextStyle.Bold) != 0)
                         textStyle |= Text.Styles.Bold;

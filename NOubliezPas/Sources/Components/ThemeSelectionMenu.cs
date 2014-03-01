@@ -23,7 +23,8 @@ namespace NOubliezPas
         HorizontalLayout playersLayout;
 
         int currentChoice = 0;
-        List<Label> themesLabels = new List<Label>();
+        List<HorizontalLayout> themesLayouts = new List<HorizontalLayout>();
+
         bool displayScores = false;
 
         public ThemeSelectionMenu( GameApplication app )
@@ -36,7 +37,7 @@ namespace NOubliezPas
         {
             KeyEventArgs args = (KeyEventArgs)e;
 
-            if (themesLabels.Count > 0)
+            if (themesLayouts.Count > 0)
             {
                 // validation du choix du theme
                 if (args.Code == Keyboard.Key.Return)
@@ -66,10 +67,33 @@ namespace NOubliezPas
 
         void ChangeChoice()
         {
-            foreach( Label themeLabel in themesLabels )
-                themeLabel.TextColor = Color.White;
+            foreach(HorizontalLayout themeHLayout in themesLayouts )
+            {
+                Frame themeNameFrame = (Frame)themeHLayout.Widgets[0];
+                Label themeNameLabel = (Label)themeNameFrame.ContainedWidget;
 
-            themesLabels[currentChoice].TextColor = Color.Black;
+                Frame scoreFrame = (Frame)themeHLayout.Widgets[1];
+                Label scoreLabel = (Label)scoreFrame.ContainedWidget;
+
+                themeNameFrame.BordersImages = myStyle.LabelsTextures;
+                themeNameLabel.TextColor = myStyle.FontNormalColor;
+
+                scoreFrame.BordersImages = myStyle.ScoresTextures;
+                scoreLabel.TextColor = myStyle.FontNormalColor;
+            }
+
+            HorizontalLayout themeLayout = themesLayouts[currentChoice];
+            Frame cthemeNameFrame = (Frame)themeLayout.Widgets[0];
+            Label cthemeNameLabel = (Label)cthemeNameFrame.ContainedWidget;
+
+            Frame cscoreFrame = (Frame)themeLayout.Widgets[1];
+            Label cscoreLabel = (Label)cscoreFrame.ContainedWidget;
+
+            cthemeNameFrame.BordersImages = myStyle.HoveredLabelsTextures;
+            cthemeNameLabel.TextColor = myStyle.FontHoveredColor;
+
+            cscoreFrame.BordersImages = myStyle.HoveredScoresTextures;
+            cscoreLabel.TextColor = myStyle.FontHoveredColor;
         }
 
         public void Initialize()
@@ -82,7 +106,7 @@ namespace NOubliezPas
             myStyle = myApp.guiStyle.ThemeSelectionMenuStyle;
 
             myPlayer = null;
-            themesLabels = new List<Label>();
+            themesLayouts = new List<HorizontalLayout>();
 
             if (myGame.NumPlayers > 0)
             {
@@ -144,6 +168,7 @@ namespace NOubliezPas
                     HorizontalLayout themeHLayout = new HorizontalLayout(myUIManager, themesLayout);
                     themeHLayout.Visible = true;
                     themesLayout.Add(themeHLayout);
+                    themesLayouts.Add(themeHLayout);
 
                     if (!myGame.IsThemeAvalaible(myGame.GetTheme(i)))
                         themeHLayout.Tint = new Color(125, 125, 125);
@@ -158,7 +183,6 @@ namespace NOubliezPas
                         Label themesNamelabel = new Label(myUIManager, themeFrame, myFont, myGame.GetTheme(i).Name, fontSize);
                         themesNamelabel.Tint = Color.White;
                         themesNamelabel.Visible = true;
-                        themesLabels.Add(themesNamelabel);
                         themeFrame.ContainedWidget = themesNamelabel;
                     }
 
@@ -214,7 +238,9 @@ namespace NOubliezPas
                         Frame fS = (Frame)vLayout.Widgets[1];
 
                         fL.Resize(fLMax);
+                        fL.ContainedWidget.Expand();
                         fS.Resize(new Vector2f(fSMax.X, fLMax.Y));
+                        fS.ContainedWidget.Expand();
                     }
                 }
             }
@@ -280,7 +306,7 @@ namespace NOubliezPas
                         if (player == myPlayer)
                             scoreLabel.Tint = Color.Black;
                         else
-                            scoreLabel.Tint = Color.White;
+                            scoreLabel.Tint = myStyle.FontNormalColor;
 
                         scoreLabel.Visible = true;
 
@@ -297,7 +323,8 @@ namespace NOubliezPas
                 }
 
                 // On met toutes les frames à la même taille
-                Vector2f fLMax = new Vector2f(0f, 0f);
+                // les photos sont carrées
+                float fLMax = 0f;
                 Vector2f fSMax = new Vector2f(0f, 0f);
 
                 foreach (Widget entry in playersLayout.Widgets)
@@ -309,8 +336,9 @@ namespace NOubliezPas
                         Frame fL = (Frame)vLayout.Widgets[0];//photo
                         Frame fS = (Frame)vLayout.Widgets[2];//nom
 
-                        fLMax.X = fLMax.X < fL.Size.X ? fL.Size.X : fLMax.X;
-                        fLMax.Y = fLMax.Y < fL.Size.Y ? fL.Size.Y : fLMax.Y;
+                        fLMax = fLMax < fL.Size.X ? fL.Size.X : fLMax;
+                        fLMax = fLMax < fL.Size.Y ? fL.Size.Y : fLMax;
+                        fLMax = fLMax < fS.Size.X ? fS.Size.X : fLMax;
 
                         fSMax.X = fSMax.X < fS.Size.X ? fS.Size.X : fSMax.X;
                         fSMax.Y = fSMax.Y < fS.Size.Y ? fS.Size.Y : fSMax.Y;
@@ -326,8 +354,11 @@ namespace NOubliezPas
                         Frame fL = (Frame)vLayout.Widgets[0];
                         Frame fS = (Frame)vLayout.Widgets[2];
 
-                        fL.Resize(fLMax);
+                        // à changer en un Expand()
+                        fL.Resize(new Vector2f(fLMax, fLMax));
+                        fL.ContainedWidget.Expand();
                         fS.Resize(fSMax);
+                        fS.ContainedWidget.Expand();
                     }
                 }
 
@@ -352,6 +383,27 @@ namespace NOubliezPas
         public void Draw(Stopwatch time)
         {
             myApp.window.Clear(myStyle.BackgroundColor);
+
+            if( myStyle.BackgroundImage != null )
+            {
+                ImagePart part= new ImagePart(myStyle.BackgroundImage);
+                myUIManager.Painter.Begin();
+                if( myStyle.BackgroundDisplayMode == TextureDisplayMode.Stretch )
+                    myUIManager.Painter.DrawImage(part.SourceTexture, new FloatRect(0f, 0f, myUIManager.ScreenSize.X, myUIManager.ScreenSize.Y), part.SourceRectangle);
+                else
+                {
+                    // the image must be centered.
+                    FloatRect destRect = new FloatRect(
+                        0.5f*(myUIManager.ScreenSize.X - myStyle.BackgroundImage.Size.X),
+                        0.5f * (myUIManager.ScreenSize.Y - myStyle.BackgroundImage.Size.Y),
+                        myStyle.BackgroundImage.Size.X,
+                        myStyle.BackgroundImage.Size.Y);
+                    myUIManager.Painter.DrawImage(part.SourceTexture, destRect, part.SourceRectangle);
+                }
+
+                myUIManager.Painter.End();
+            }
+
             myUIManager.Render();
         }
     }

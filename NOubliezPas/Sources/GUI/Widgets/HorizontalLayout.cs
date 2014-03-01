@@ -127,5 +127,23 @@ namespace kT.GUI
                     }
                 }
 		}
+
+        /// <summary>
+        /// Returns the maximum size that can use a chikld without any parent resizing.
+        /// Must be implemented by widgets like layouts, frames etc...
+        /// </summary>
+        /// <param name="child">Child willing to resize</param>
+        /// <returns>Maximum size that can occupy the child.</returns>
+        public override Vector2f GetMaxSizeForChild(Widget child)
+        {
+            float maxSizeX = Size.X;
+            foreach (Widget widget in Widgets)
+            {
+                if (widget.Visible && widget != child)
+                    maxSizeX -= widget.Size.X;
+            }
+
+            return new Vector2f(maxSizeX, Size.Y);
+        }
 	}
 }

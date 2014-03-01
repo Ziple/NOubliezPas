@@ -275,6 +275,17 @@ namespace kT.GUI
 			return new Vector2f(0f,0f);
 		}
 
+        /// <summary>
+        /// Returns the maximum size that can use a chikld without any parent resizing.
+        /// Must be implemented by widgets like layouts, frames etc...
+        /// </summary>
+        /// <param name="child">Child willing to resize</param>
+        /// <returns>Maximum size that can occupy the child.</returns>
+        public virtual Vector2f GetMaxSizeForChild(Widget child)
+        {
+            return new Vector2f(0f, 0f);
+        }
+
 		/// <summary>
 		/// Called by the child to notice that it wants
 		/// to change its size or Visibility.
@@ -359,6 +370,14 @@ namespace kT.GUI
 			myBoundingRectangle.Height = newSize.Y;
 		}
 
+        /// <summary>
+        /// Maximizes the widgets size without resizing the parent.
+        /// </summary>
+        public virtual void Expand()
+        {
+            if (Parent != null)
+                Size = Parent.GetMaxSizeForChild(this);
+        }
 		#endregion
 
 		#region Rendering hints

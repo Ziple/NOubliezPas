@@ -35,15 +35,23 @@ namespace kT.GUI
 			get { return myFrameImages; }
 			set
 			{
-				myFrameImages[0] = value[0];
-				myFrameImages[1] = value[1];
-				myFrameImages[2] = value[2];
-				myFrameImages[3] = value[3];
-				myFrameImages[4] = value[4];
-				myFrameImages[5] = value[5];
-				myFrameImages[6] = value[6];
-				myFrameImages[7] = value[7];
-				myFrameImages[8] = value[8];
+                if( value != null )
+                {
+                    myFrameImages[0] = value[0];
+                    myFrameImages[1] = value[1];
+                    myFrameImages[2] = value[2];
+                    myFrameImages[3] = value[3];
+                    myFrameImages[4] = value[4];
+                    myFrameImages[5] = value[5];
+                    myFrameImages[6] = value[6];
+                    myFrameImages[7] = value[7];
+                    myFrameImages[8] = value[8];
+                }
+                else
+                {
+                    for(uint i = 0; i < 9; i++)
+                        myFrameImages[i] = null;
+                }
 
 				if (myContainedWidget != null
 					&& myContainedWidget.Visible )
@@ -163,13 +171,25 @@ namespace kT.GUI
 		{
 			if (child == ContainedWidget)
 			{
-				Vector2f size = requestedSize;
+				Vector2f size = new Vector2f(requestedSize.X, requestedSize.Y);
 				size.X += LeftBorderSize + RightBorderSize + child.Position.X;
 				size.Y += TopBorderSize + BottomBorderSize + child.Position.Y;
 				return size;
 			}
 			return new Vector2f(0f,0f);
 		}
+
+        /// <summary>
+        /// Returns the maximum size that can use a chikld without any parent resizing.
+        /// Must be implemented by widgets like layouts, frames etc...
+        /// </summary>
+        /// <param name="child">Child willing to resize</param>
+        /// <returns>Maximum size that can occupy the child.</returns>
+        public override Vector2f GetMaxSizeForChild(Widget child)
+        {
+            FloatRect geom = GeometryRegion;
+            return new Vector2f(geom.Width-child.Position.X, geom.Height-child.Position.Y);
+        }
 
 		public override void OnDraw(DrawEvent drawEvent)
 		{
