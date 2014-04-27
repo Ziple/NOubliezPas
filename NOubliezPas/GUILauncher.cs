@@ -61,7 +61,8 @@ namespace NOubliezPas
                 else if( msg == GameToControllerWindowMessage.SongTestExit )
                     ActiveController = null;
                 else
-                    ActiveController.ReadMessage(msg);
+                    if( ActiveController != null )
+                        ActiveController.ReadMessage(msg);
             }
         }
 

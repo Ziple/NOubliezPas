@@ -21,6 +21,8 @@ namespace NOubliezPas.Controllers
         HBox currentAnalyzedWords = null;
         List<Button> currentAnalyzedWordsButtons = null;
 
+        int myNumHolesToFill = -1;
+
         public SongTestController( GUILauncher guiLauncher ):
             base(guiLauncher)
         {
@@ -41,7 +43,7 @@ namespace NOubliezPas.Controllers
             hBox.Add(answerEntry);
 
             // Ajout du bouton de validation
-            analyzeBtn = new Button("Analyser la réponse");
+            analyzeBtn = new Button("Mettre la réponse");
             analyzeBtn.Clicked += this.OnAnalyzeButtonClicked;
 
             hBox.Add(analyzeBtn);
@@ -65,12 +67,16 @@ namespace NOubliezPas.Controllers
         public void OnWaitingAnswer()
         {
             answerEntry.Sensitive = true;
+
+            Component comp = myGUILauncher.OurGameApp.ActiveComponent;
+            SongTest stComp = (SongTest)comp;
+            myNumHolesToFill = stComp.GetCurrentSubtitle().NumHoles;
         }
 
         public void OnAnswerTextDeleted( object o, TextDeletedArgs a )
         {
             List<string> l = GetWordsList();
-            analyzeBtn.Sensitive = (l.Count > 0);
+            analyzeBtn.Sensitive = (l.Count == myNumHolesToFill);
 
             ClearWordsButtonList();
         }
@@ -78,7 +84,7 @@ namespace NOubliezPas.Controllers
         public void OnAnswerTextEntered( object o, TextInsertedArgs a)
         {
             List<string> l = GetWordsList();
-            analyzeBtn.Sensitive = (l.Count > 0);
+            analyzeBtn.Sensitive = (l.Count == myNumHolesToFill);
 
             ClearWordsButtonList();
         }
@@ -116,7 +122,7 @@ namespace NOubliezPas.Controllers
             ClearWordsButtonList();
 
             List<string> analyzedWords = GetWordsList();
-            if( analyzedWords.Count > 0 )
+            if( analyzedWords.Count == myNumHolesToFill )
             {
                 currentAnalyzedWords = new HBox();
                 currentAnalyzedWordsButtons = new List<Button>();
@@ -138,6 +144,9 @@ namespace NOubliezPas.Controllers
                 vBox.Add(currentAnalyzedWords);
 
                 analyzeBtn.Sensitive = false;
+
+                SongTest stComp = (SongTest)myGUILauncher.OurGameApp.ActiveComponent;
+                stComp.GetCurrentSubtitle().FillHoles(analyzedWords);
             }
         }
 
@@ -154,11 +163,20 @@ namespace NOubliezPas.Controllers
 
                 if( index >= 0 )
                 {
+                    List<bool> validationList = new List<bool>();
                     for( int i = 0; i <= index; i++ )
                     {
                         currentAnalyzedWordsButtons[i].Sensitive = false;
                         // envoyer l'événement au jeu
+                        validationList.Add(true);
                     }
+
+                    for( int i = index+1; i < currentAnalyzedWordsButtons.Count; i++ )
+                        validationList.Add(false);
+
+                    List<string> analyzedWords = GetWordsList();
+                    SongTest stComp = (SongTest)myGUILauncher.OurGameApp.ActiveComponent;
+                    stComp.GetCurrentSubtitle().FillHoles(analyzedWords, validationList);
                 }
             }
         }

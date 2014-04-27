@@ -161,6 +161,89 @@ namespace kT.GUI
             set { myTextColor = value; rebuildTextCache(); }
 		}
 
+        public void SetTextFromSlices( List<KeyValuePair<string, Color>> slices )
+        {
+            string text = "";
+            for (int i = 0; i < slices.Count; i++)
+                text += slices[i];
+
+            myText = text;
+
+            TextString[] textStrings = new TextString[slices.Count];
+            List<BasicLabel> basicLabels = new List<BasicLabel>();
+            int labelsIndex = 0;
+
+            Vector2f size = new Vector2f(0f, 0f);
+            Vector2f pos = new Vector2f(0f, 0f);
+            Vector2f curLineSize = new Vector2f(0f, 0f);
+
+            for( int j = 0; j < slices.Count; j++)
+            {
+                KeyValuePair<string, Color> slice = slices[j];
+                textStrings[j] = new TextString(slice.Key, myCharacterSize);
+
+                List<KeyValuePair<TextStyle, string>> formatedText = textStrings[j].FormatedText;
+
+                for (int i = 0; i < formatedText.Count; i++)
+                {
+                    BasicLabel lab = new BasicLabel(Manager, this, Font, formatedText[i].Key, slice.Value, formatedText[i].Value, myCharacterSize);
+                    basicLabels.Add(lab);
+
+                    lab.Visible = true;
+
+                    Vector2f nnpos = pos;
+                    nnpos.Y = pos.Y + (curLineSize.Y - lab.Size.Y);
+
+                    lab.Position = nnpos;
+
+                    float r = pos.X + lab.Size.X;
+                    size.X = r > size.X ? r : size.X;
+                    float d = pos.Y + lab.Size.Y;
+                    size.Y = d > size.Y ? d : size.Y;
+
+                    if (lab.TextStyle == TextStyle.EndLine)
+                    {
+                        pos.X = 0;
+                        pos.Y += curLineSize.Y;
+                        curLineSize = new Vector2f(0f, 0f);
+                    }
+                    else
+                    {
+                        Vector2f vsize = lab.Size;
+                        curLineSize.X += (int)vsize.X;
+
+                        if (vsize.Y > curLineSize.Y )
+                        {
+                            curLineSize.Y = (int)vsize.Y;
+                            // we need to update all the preceding labels
+                            // in the same line because the bottom of line is not the same anymore!
+                            int k = labelsIndex;
+                            while( k >= 0 && basicLabels[k].TextStyle != TextStyle.EndLine)
+                            {
+                                Vector2f npos = basicLabels[k].Position;
+                                npos.Y = pos.Y + (curLineSize.Y - basicLabels[k].Size.Y);
+                                basicLabels[k].Position = npos;
+                                k--;
+                            }
+                        }
+                        pos.X += (int)vsize.X;
+                    }
+
+                    labelsIndex++;
+                }
+
+            }
+
+            myBasicLabels = basicLabels.ToArray();
+
+            if (myFont != null)
+                myInnerTextSize = size;
+            else
+                myInnerTextSize = new Vector2f(0f, 0f);
+
+            UpdateSize();
+        }
+
 		/// <summary>
 		/// When we change the text of the label we must
 		/// rebuild the list of basic label needed and their position.

@@ -54,6 +54,11 @@ namespace NOubliezPas
             messagePumper = new Thread(this.PumpMessages);
         }
 
+        public Component ActiveComponent
+        {
+            get { return activeComponent; }
+        }
+
         /// <summary>
         /// Pump the messages sent by the controller
         /// </summary>

@@ -24,6 +24,8 @@ namespace NOubliezPas
         Label scoreLabel;
 
         bool waiting = true;
+
+        bool sentWaitingForAnswerNotif = false;
         bool waitingForAnswer = false;
         int validated = -1;
         bool atEnd = false;
@@ -89,30 +91,34 @@ namespace NOubliezPas
                         }
                     }
                 }
-                else
+                else//waiting for answer&&!atEnd
                 {
                     if (args.Code == Keyboard.Key.Return
-                        || args.Code == Keyboard.Key.Space )
-                    {
-                        waitingForAnswer = false;
-
-                        float t = (float)(totTime.ElapsedMilliseconds / 1000d);
-                        int index = mySong.Lyrics.AtTime(0, t);
-                        validated = index;
-                        mySong.Music.Play();
-                        totTime.Start();
-                    }
+                        || args.Code == Keyboard.Key.Space )// validation de la réponse
+                        ValidateAnswer();
 
                 }
             }
-            else
+            else// at end
             {
-                if (waiting)
+                if (waiting)// waiting
                 {
                     if (args.Code == Keyboard.Key.Return)
                         DoTransition();
                 }
             }
+        }
+
+        public void ValidateAnswer()
+        {
+            waitingForAnswer = false;
+            sentWaitingForAnswerNotif = false;
+
+            float t = (float)(totTime.ElapsedMilliseconds / 1000d);
+            int index = mySong.Lyrics.AtTime(0, t);
+            validated = index;
+            mySong.Music.Play();
+            totTime.Start();
         }
 
         void DoTransition()
@@ -180,6 +186,17 @@ namespace NOubliezPas
             frame.CenterPosition = new Vector2f(0.5f * (float)myApp.window.Size.X, 0.75f * (float)myApp.window.Size.Y);
         }
 
+        public Subtitle GetCurrentSubtitle()
+        {
+            float t = (float)(totTime.ElapsedMilliseconds / 1000d);
+            int index = mySong.Lyrics.AtTime(0, t);
+
+            if (index < mySong.Lyrics.SubtitlesCount
+                    && index >= 0)
+                    return mySong.Lyrics.GetSubtitle(index);
+
+            return null;
+        }
         public void Update(Stopwatch time)
         {
             myUIManager.Update(time);
@@ -190,14 +207,13 @@ namespace NOubliezPas
             atEnd = (t >= (mySong.Music.Duration.TotalMilliseconds / 1000d));
             if (!atEnd)
             {
-                if (index < mySong.Lyrics.SubtitlesCount
-                    && index >= 0)
-                {
-                    Subtitle sub = mySong.Lyrics.GetSubtitle(index);
+                Subtitle sub = GetCurrentSubtitle();
 
+                if ( sub != null )
+                {
                     if (sub.ContainHole)
                     {
-                        if (validated < index)
+                        if (validated < index)// on attend la réponse
                         {
                             waitingForAnswer = true;
                             mySong.Music.Pause();
@@ -205,12 +221,12 @@ namespace NOubliezPas
                         }
 
                         if (waitingForAnswer)
-                            lyricsLabel.Text = sub.Text;
+                            lyricsLabel.SetTextFromSlices( sub.GetDisplayedSlices() );
                         else
                             lyricsLabel.Text = sub.CompleteText;
                     }
                     else
-                        lyricsLabel.Text = sub.Text;
+                        lyricsLabel.SetTextFromSlices(sub.GetDisplayedSlices());
                 }
                 else
                     lyricsLabel.Text = "";
@@ -228,8 +244,11 @@ namespace NOubliezPas
                 waiting = true;
             }
 
-            if (waitingForAnswer)
+            if (waitingForAnswer && !sentWaitingForAnswerNotif)
+            {
                 myApp.OurGameToControllerPipe.SendMessage(GameToControllerWindowMessage.ApplicationWaitingAnswer);
+                sentWaitingForAnswerNotif = true;
+            }
         }
 
         public void Draw(Stopwatch time)

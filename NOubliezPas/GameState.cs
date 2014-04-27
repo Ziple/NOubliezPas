@@ -17,25 +17,50 @@ namespace NOubliezPas
     {
         float myStartTime;
         float myEndTime;
-        String myText;
-
         bool myContainHole = false;
+        String myTextWithAllHoles;
         String myWholeText = null;
+        String myDisplayedText = null;
+
+        List<KeyValuePair<String, Color>> mySliceCache = null;
 
         public Subtitle(float startTime, float endTime, String text)
         {
             myStartTime = startTime;
             myEndTime = endTime;
-            myText = text;
+            myWholeText = text;
+            myTextWithAllHoles = text;
+            myDisplayedText = text;
+
+            BuildSlicesCache();
         }
 
         public Subtitle(float startTime, float endTime, String text, String wholeText )
         {
             myStartTime = startTime;
             myEndTime = endTime;
-            myText = text;
+            myTextWithAllHoles = text;
             myWholeText = wholeText;
-            myContainHole = true;
+            myDisplayedText = text;
+            myContainHole = (NumHoles > 0);
+
+            BuildSlicesCache();
+        }
+
+        void BuildSlicesCache()
+        {
+            List<KeyValuePair<String,Color>> ret = new List<KeyValuePair<string,Color>>();
+
+            List<String> slices = GetTextSlices();
+            foreach (String s in slices)
+                ret.Add(new KeyValuePair<string, Color>(s, Color.White));
+
+            mySliceCache = ret;
+        }
+
+        public List<KeyValuePair<String, Color>> GetDisplayedSlices()
+        {
+            return mySliceCache;
         }
 
         public bool ContainHole
@@ -43,14 +68,140 @@ namespace NOubliezPas
             get { return myContainHole; }
         }
 
+        public List<String> GetTextSlices()
+        {
+            List<String> ret = new List<String>();
+
+            int sliceStart = -1;
+            for (int i = 0; i < myTextWithAllHoles.Length; )
+            {
+                if( myTextWithAllHoles[i] == '_' )
+                {
+                    sliceStart = i;
+
+                    while (i < myTextWithAllHoles.Length && myTextWithAllHoles[i] == '_')
+                        i++;
+
+                    int sliceEnd = i - 1;
+
+                    int count = sliceEnd - sliceStart + 1;
+                    if( count >= 0 )
+                        ret.Add(myTextWithAllHoles.Substring(sliceStart, sliceEnd - sliceStart + 1));
+
+                    sliceStart = -1;
+                }
+                else
+                {
+                    sliceStart = i;
+
+                    while (i < myTextWithAllHoles.Length && myTextWithAllHoles[i] != '_')
+                        i++;
+                    int sliceEnd = i - 1;
+
+                    int count = sliceEnd - sliceStart + 1;
+                    if (count >= 0)
+                        ret.Add(myTextWithAllHoles.Substring(sliceStart, sliceEnd - sliceStart + 1));
+
+                    sliceStart = -1;
+                }
+            }
+
+            return ret;
+        }
+        public List<KeyValuePair<int,int>> GetHolesList()
+        {
+            List<KeyValuePair<int, int>> ret = new List<KeyValuePair<int, int>>();
+
+            for (int i = 0; i < myTextWithAllHoles.Length; i++  )
+            {
+                if( myTextWithAllHoles[i] == '_' )
+                {
+                    int start = i;
+                    int end = i;
+
+                    while( i < myTextWithAllHoles.Length && myTextWithAllHoles[i] == '_' )
+                    {
+                        end = i;
+                        i++;
+                    }
+
+                    ret.Add(new KeyValuePair<int, int>(start, end));
+                }
+            }
+                return ret;
+        }
+        public int NumHoles
+        {
+            get {
+                return GetHolesList().Count;
+            }
+        }
+
+        bool AnswerCanBeCorrect( String replacerText)
+        {
+            replacerText = replacerText.ToLower();
+            String wholeText = myWholeText.ToLower();
+
+            for (int j = 0; j < replacerText.Length; j++ )
+            {
+                if( replacerText[j] != wholeText[j] )
+                    return false;
+            }
+
+            return true;
+        }
+
+        public void FillHoles( List<String> holesFillUps, List<bool> validationList = null )
+        {
+            if (holesFillUps.Count == NumHoles)
+            {
+                mySliceCache.Clear();
+
+                if (validationList == null)
+                {
+                    validationList = new List<bool>();
+                    for (int i = 0; i < holesFillUps.Count; i++)
+                        validationList.Add(false);
+                }
+
+                List<String> textSlices = GetTextSlices();
+                List<String> replacedSlices = new List<String>();
+
+                String replacerText = "";
+                int replacerIndex = 0;
+                for (int i = 0; i < textSlices.Count; i++)
+                {
+                    if (textSlices[i].Contains('_'))//a hole
+                    {
+                        String s = holesFillUps[replacerIndex];
+                        replacerText += s;
+
+                        Color c = Color.White;
+
+                        if (validationList[replacerIndex])// Choose the right color
+                            c = AnswerCanBeCorrect(replacerText) ? Color.Green : Color.Red;
+                        else
+                            c = Color.Blue;
+
+                        replacedSlices.Add(s);
+                        mySliceCache.Add(new KeyValuePair<string, Color>(s, c));
+                        replacerIndex++;
+                    }
+                    else// not a hole
+                    {
+                        replacerText += textSlices[i];
+                        replacedSlices.Add(textSlices[i]);
+                        mySliceCache.Add(new KeyValuePair<string, Color>(textSlices[i], Color.White));
+                    }
+                }
+
+                myDisplayedText = replacerText;
+            }
+        }
+
         public String CompleteText
         {
-            get
-            {
-                if (ContainHole)
-                    return myWholeText;
-                return myText;
-            }
+            get { return myWholeText; }
         }
 
         public float StartTime
@@ -61,11 +212,6 @@ namespace NOubliezPas
         public float EndTime
         {
             get { return myEndTime; }
-        }
-
-        public String Text
-        {
-            get { return myText;  }
         }
     }
     #endregion
