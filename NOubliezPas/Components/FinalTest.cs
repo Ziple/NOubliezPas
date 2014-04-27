@@ -8,34 +8,48 @@ using SFML.Window;
 using SFML.Graphics;
 using System.Diagnostics;
 
+using NOubliezPas.Communication;
+
 namespace NOubliezPas
 {
-    class BlindTest : Component
+    class FinalTest : Component
     {
         GameApplication myApp = null;
         Player myPlayer = null;
         Song mySong;
 
         UIManager myUIManager;
-        Label lyricsLabel;
-        Frame lyricsFrame;
 
         Frame songNameFrame;
 
         Label scoreLabel;
 
-        bool displaySongName = true;
         bool waiting = true;
         bool atEnd = false;
 
         Stopwatch totTime = new Stopwatch();
 
-        public BlindTest(GameApplication app, Player player, Song song)
+        public FinalTest(GameApplication app, Player player, Song song)
         {
             myApp = app;
             myPlayer = player;
             myPlayer.DidBlindTest = true;
             mySong = song;
+        }
+
+        public void Activate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.FinalTestEnter);
+        }
+
+        public void Desactivate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.FinalTestExit);
+        }
+
+        public void ReadMessage(ControllerToGameMessage msg)
+        {
+
         }
 
         public void OnKeyPressed(object sender, EventArgs e)
@@ -63,17 +77,7 @@ namespace NOubliezPas
 
             if (!atEnd)
             {
-                if (displaySongName && waiting)
-                {
-                    if (args.Code == Keyboard.Key.Return)
-                    {
-                        waiting = false;
-                        displaySongName = false;
-                        mySong.Music.Play();
-                        totTime.Start();
-                    }
-                }
-                else if(!waiting)
+                if (!waiting)
                 {
                     // on veut arrêter pour compter les points par exemple
                     if (args.Code == Keyboard.Key.Space)
@@ -88,7 +92,7 @@ namespace NOubliezPas
             if (waiting)
             {
                 // on veut continuer le jeu
-                // par exemple lancer le blind test suivant
+                // (afficher le résultat)
                 if (args.Code == Keyboard.Key.Return)
                     DoTransition();
             }
@@ -97,37 +101,6 @@ namespace NOubliezPas
         void DoTransition()
         {
             mySong.Music.Stop();
-
-            Player pl = null;
-            for (int i = 0; i < myApp.game.NumPlayers; i++)
-                if (!myApp.game.Players[i].DidBlindTest)
-                {
-                    pl = myApp.game.Players[i];
-                    break;
-                }
-
-            // reste des joueurs à faire passer au blind test
-            if (pl != null)
-            {
-                myApp.mustChangeComponent = true;
-                myApp.newComponent = new BlindTest(myApp, pl, myApp.game.SharedSong);
-                myApp.newComponent.Initialize();
-                myApp.newComponent.LoadContent();
-            }
-            // Faut lancer la finale gars!
-            else
-            {
-                Player bpl = myApp.game.Players[0];
-
-                for (int i = 1; i < myApp.game.NumPlayers; i++)
-                    if (myApp.game.Players[i].Score >= bpl.Score)
-                        bpl = myApp.game.Players[i];
-
-                myApp.mustChangeComponent = true;
-                myApp.newComponent = new BlindTest(myApp, bpl, myApp.game.FinalSong);
-                myApp.newComponent.Initialize();
-                myApp.newComponent.LoadContent();
-            }
         }
 
         public void Initialize()
@@ -149,10 +122,10 @@ namespace NOubliezPas
             songNameFrame.BordersImages = labelTextures;
             songNameFrame.Visible = true;
 
-            Label songNameLabel = new Label(myUIManager, null, myFont, mySong.Name );
+            Label songNameLabel = new Label(myUIManager, null, myFont, mySong.Name);
             songNameLabel.Tint = Color.White;
             songNameLabel.Visible = true;
-            songNameFrame.CenterPosition = (new Vector2f( myApp.window.Size.X, myApp.window.Size.Y)-songNameFrame.Size) / 2f; ;
+            songNameFrame.CenterPosition = (new Vector2f(myApp.window.Size.X, myApp.window.Size.Y)-songNameFrame.Size) / 2f; ;
             songNameFrame.ContainedWidget = songNameLabel;
 
             Frame scoreFrame = new Frame(myUIManager, null);
@@ -164,16 +137,6 @@ namespace NOubliezPas
             scoreLabel.Visible = true;
             scoreFrame.Position = new Vector2f(10f, 10f);
             scoreFrame.ContainedWidget = scoreLabel;
-
-            lyricsFrame = new Frame(myUIManager, null);
-            lyricsFrame.BordersImages = labelTextures;
-            lyricsFrame.Visible = true;
-
-            lyricsLabel = new Label(myUIManager, null, myFont, "");
-            lyricsLabel.Tint = Color.White;
-            lyricsLabel.Visible = true;
-            lyricsFrame.ContainedWidget = lyricsLabel;
-            lyricsFrame.CenterPosition = new Vector2f(0.5f * (float)myApp.window.Size.X, 0.75f * (float)myApp.window.Size.Y);
         }
 
         public void Update(Stopwatch time)
@@ -184,37 +147,8 @@ namespace NOubliezPas
             int index = mySong.Lyrics.AtTime(0, t);
 
             atEnd = (t >= (mySong.Music.Duration.TotalMilliseconds / 1000d));
-            if (!atEnd)
-            {
-                if (displaySongName)
-                {
-                    lyricsFrame.Visible = false;
-                    songNameFrame.Visible = true;
-                }
-                else
-                {
-                    if (index < mySong.Lyrics.SubtitlesCount
-                        && index >= 0)
-                    {
-                        Subtitle sub = mySong.Lyrics.GetSubtitle(index);
-                        lyricsLabel.Text = sub.CompleteText;
-                    }
-                    else
-                        lyricsLabel.Text = "";
-
-                    if (lyricsLabel.Text == "")
-                        lyricsFrame.Visible = false;
-                    else
-                        lyricsFrame.Visible = true;
-
-                    lyricsFrame.CenterPosition = new Vector2f(0.5f * myApp.window.Size.X, 0.75f * myApp.window.Size.Y);
-                }
-            }
-            else
-            {
-                lyricsFrame.Visible = false;
+            if (atEnd)
                 waiting = true;
-            }
         }
 
         public void Draw(Stopwatch time)

@@ -12,9 +12,7 @@ namespace kT.GUI
     {
         public ImagePart( Texture tex )
         {
-            SourceTexture = tex;
-            Vector2u texSize = tex.Size;
-            SourceRectangle = new IntRect(0, 0, (int)texSize.X, (int)texSize.Y);
+            SetFromTexture(tex);
         }
         public ImagePart( Texture tex, IntRect rect )
         {
@@ -32,6 +30,18 @@ namespace kT.GUI
         {
             get;
             set;
+        }
+
+        public Vector2f Size
+        {
+            get { return new Vector2f(SourceRectangle.Width, SourceRectangle.Height);  }
+        }
+
+        public void SetFromTexture( Texture tex )
+        {
+            SourceTexture = tex;
+            Vector2u texSize = tex.Size;
+            SourceRectangle = new IntRect(0, 0, (int)texSize.X, (int)texSize.Y);
         }
     }
 }

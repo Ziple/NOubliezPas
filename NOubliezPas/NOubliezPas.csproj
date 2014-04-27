@@ -35,6 +35,12 @@
     <StartupObject>NOubliezPas.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL" />
     <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\GtkSharp\2.12\lib\gtk-sharp-2.0\pango-sharp.dll</HintPath>
@@ -60,33 +66,39 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Sources\Components\BlindTest.cs" />
-    <Compile Include="Sources\Components\FinalTest.cs" />
-    <Compile Include="Sources\Components\SongSelectionMenu.cs" />
-    <Compile Include="Sources\Components\SongTest.cs" />
-    <Compile Include="Sources\GameApplication.cs" />
-    <Compile Include="Sources\Components\Component.cs" />
-    <Compile Include="Sources\Components\ThemeSelectionMenu.cs" />
-    <Compile Include="Sources\GameState.cs" />
-    <Compile Include="Sources\GUI\Core\ImagePart.cs" />
-    <Compile Include="Sources\GUI\Style.cs" />
-    <Compile Include="Sources\GUI\Widgets\Button.cs" />
-    <Compile Include="Sources\GUI\Widgets\Caption.cs" />
-    <Compile Include="Sources\GUI\Widgets\HorizontalSpacer.cs" />
-    <Compile Include="Sources\GUI\Widgets\VerticalSpacer.cs" />
-    <Compile Include="Sources\GUI\WM\Cursor.cs" />
-    <Compile Include="Sources\GUI\WM\Events.cs" />
-    <Compile Include="Sources\GUI\DC\Font.cs" />
-    <Compile Include="Sources\GUI\Widgets\Frame.cs" />
-    <Compile Include="Sources\GUI\Widgets\HorizontalLayout.cs" />
-    <Compile Include="Sources\GUI\Widgets\Label.cs" />
-    <Compile Include="Sources\GUI\Widgets\Layout.cs" />
-    <Compile Include="Sources\GUI\WM\Manager.cs" />
-    <Compile Include="Sources\GUI\DC\Painter.cs" />
-    <Compile Include="Sources\GUI\Core\TextString.cs" />
-    <Compile Include="Sources\GUI\Widgets\VerticalLayout.cs" />
-    <Compile Include="Sources\GUI\Widgets\Widget.cs" />
-    <Compile Include="Sources\Program.cs" />
+    <Compile Include="Communication\ControllerToGameMessagePipe.cs" />
+    <Compile Include="Controllers\Controller.cs" />
+    <Compile Include="Controllers\FullscreeModeController.cs" />
+    <Compile Include="Controllers\SongTestController.cs" />
+    <Compile Include="GUILauncher.cs" />
+    <Compile Include="Communication\GameToControllerMessagePipe.cs" />
+    <Compile Include="Components\BlindTest.cs" />
+    <Compile Include="Components\FinalTest.cs" />
+    <Compile Include="Components\SongSelectionMenu.cs" />
+    <Compile Include="Components\SongTest.cs" />
+    <Compile Include="GameApplication.cs" />
+    <Compile Include="Components\Component.cs" />
+    <Compile Include="Components\ThemeSelectionMenu.cs" />
+    <Compile Include="GameState.cs" />
+    <Compile Include="GUI\Core\ImagePart.cs" />
+    <Compile Include="GUI\Style.cs" />
+    <Compile Include="GUI\Widgets\Button.cs" />
+    <Compile Include="GUI\Widgets\Caption.cs" />
+    <Compile Include="GUI\Widgets\HorizontalSpacer.cs" />
+    <Compile Include="GUI\Widgets\VerticalSpacer.cs" />
+    <Compile Include="GUI\WM\Cursor.cs" />
+    <Compile Include="GUI\WM\Events.cs" />
+    <Compile Include="GUI\DC\Font.cs" />
+    <Compile Include="GUI\Widgets\Frame.cs" />
+    <Compile Include="GUI\Widgets\HorizontalLayout.cs" />
+    <Compile Include="GUI\Widgets\Label.cs" />
+    <Compile Include="GUI\Widgets\Layout.cs" />
+    <Compile Include="GUI\WM\Manager.cs" />
+    <Compile Include="GUI\DC\Painter.cs" />
+    <Compile Include="GUI\Core\TextString.cs" />
+    <Compile Include="GUI\Widgets\VerticalLayout.cs" />
+    <Compile Include="GUI\Widgets\Widget.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

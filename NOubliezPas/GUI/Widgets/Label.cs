@@ -212,6 +212,8 @@ namespace kT.GUI
 
         public override void Expand()
         {
+            // Position back at the origin
+            Position = new Vector2f(0f, 0f);
             base.Expand();
 
             // We just center the label inside the parent

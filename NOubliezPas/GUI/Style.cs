@@ -7,6 +7,7 @@ using SFML.Graphics;
 using SFML.Window;
 using System.IO;
 using System.Xml;
+using kT.GUI;
 
 namespace NOubliezPas
 {
@@ -18,9 +19,31 @@ namespace NOubliezPas
 
     class FrameTexturesLoader
     {
-        public static Texture[] Load(XmlReader reader)
+        public static ImagePart LoadTexture( XmlReader reader )
         {
-            Texture[] textures = new Texture[9];
+            ImagePart tex = null;
+            String r = reader.GetAttribute("src");
+            if (r != null)
+            {
+                tex = new ImagePart(new Texture(r));
+
+                String srcX = reader.GetAttribute("srcX");
+                String srcY = reader.GetAttribute("srcY");
+                String srcW = reader.GetAttribute("srcW");
+                String srcH = reader.GetAttribute("srcH");
+
+                if ((srcX != null) && (srcY != null) && (srcW != null) && (srcH != null))
+                {
+                    IntRect srcRec = new IntRect(int.Parse(srcX), int.Parse(srcY), int.Parse(srcW), int.Parse(srcH));
+                    tex.SourceRectangle = srcRec;
+                }
+            }
+
+            return tex;
+        }
+        public static ImagePart[] Load(XmlReader reader)
+        {
+            ImagePart[] textures = new ImagePart[9];
 
             while (reader.Read())
             {
@@ -29,59 +52,23 @@ namespace NOubliezPas
                     case XmlNodeType.Element:
                         {
                             if (reader.Name == "bordhautgauche")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[0] = new Texture(r);
-                            }
+                                textures[0] = LoadTexture(reader);
                             else if (reader.Name == "milieuhaut")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[1] = new Texture(r);
-                            }
+                                textures[1] = LoadTexture(reader);
                             else if (reader.Name == "bordhautdroit")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[2] = new Texture(r);
-                            }
+                                textures[2] = LoadTexture(reader);
                             else if (reader.Name == "milieugauche")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[3] = new Texture(r);
-                            }
+                                textures[3] = LoadTexture(reader);
                             else if (reader.Name == "milieu")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[4] = new Texture(r);
-                            }
+                                textures[4] = LoadTexture(reader);
                             else if (reader.Name == "milieudroit")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[5] = new Texture(r);
-                            }
+                                textures[5] = LoadTexture(reader);
                             else if (reader.Name == "bordbasgauche")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[6] = new Texture(r);
-                            }
+                                textures[6] = LoadTexture(reader);
                             else if (reader.Name == "milieubas")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[7] = new Texture(r);
-                            }
+                                textures[7] = LoadTexture(reader);
                             else if (reader.Name == "bordbasdroit")
-                            {
-                                String r = reader.GetAttribute("src");
-                                if (r != null)
-                                    textures[8] = new Texture(r);
-                            }
+                                textures[8] = LoadTexture(reader);
                             break;
                         }
                 }
@@ -93,14 +80,22 @@ namespace NOubliezPas
     class ThemeSelectionMenuStyle
     {
         public Color BackgroundColor;
-        public Texture BackgroundImage;
+        public ImagePart BackgroundImage;
         public TextureDisplayMode BackgroundDisplayMode;
-        public Texture[] LabelsTextures;
-        public Texture[] HoveredLabelsTextures;
-        public Texture[] ScoresTextures;
-        public Texture[] HoveredScoresTextures;
-        public Texture[] PlayersNamesTextures;
-        public Texture[] PlayersPicsTextures;
+        public ImagePart[] FirstLabelsTextures;
+        public ImagePart[] FirstHoveredLabelsTextures;
+        public ImagePart[] FirstScoresTextures;
+        public ImagePart[] FirstHoveredScoresTextures;
+        public ImagePart[] LabelsTextures;
+        public ImagePart[] HoveredLabelsTextures;
+        public ImagePart[] ScoresTextures;
+        public ImagePart[] HoveredScoresTextures;
+        public ImagePart[] LastLabelsTextures;
+        public ImagePart[] LastHoveredLabelsTextures;
+        public ImagePart[] LastScoresTextures;
+        public ImagePart[] LastHoveredScoresTextures;
+        public ImagePart[] PlayersNamesTextures;
+        public ImagePart[] PlayersPicsTextures;
         public float ThemesLabelsBottomSpace;
         public float ThemesListRightSpace;
         public float PlayersPhotoSpace;
@@ -114,14 +109,22 @@ namespace NOubliezPas
 
         public ThemeSelectionMenuStyle(
             Color backgroundColor,
-            Texture backgroundImage,
+            ImagePart backgroundImage,
             TextureDisplayMode backgroundDisplayMode,
-            Texture[] labelsTextures,
-            Texture[] hoveredLabelsTextures,
-            Texture[] scoresTextures,
-            Texture[] hoveredScoresTextures,
-            Texture[] playersNamesTextures,
-            Texture[] playersPicsTextures,
+            ImagePart[] firstLabelsTextures,
+            ImagePart[] firstHoveredLabelsTextures,
+            ImagePart[] firstScoresTextures,
+            ImagePart[] firstHoveredScoresTextures,
+            ImagePart[] labelsTextures,
+            ImagePart[] hoveredLabelsTextures,
+            ImagePart[] scoresTextures,
+            ImagePart[] hoveredScoresTextures,
+            ImagePart[] lastLabelsTextures,
+            ImagePart[] lastHoveredLabelsTextures,
+            ImagePart[] lastScoresTextures,
+            ImagePart[] lastHoveredScoresTextures,
+            ImagePart[] playersNamesTextures,
+            ImagePart[] playersPicsTextures,
             float themesLabelsBottomSpace,
             float themesListRightSpace,
             float playersPhotoSpace,
@@ -137,11 +140,23 @@ namespace NOubliezPas
             BackgroundImage = backgroundImage;
             BackgroundDisplayMode = backgroundDisplayMode;
 
+            FirstLabelsTextures = firstLabelsTextures;
+            FirstHoveredLabelsTextures = firstHoveredLabelsTextures;
+
+            FirstScoresTextures = firstScoresTextures;
+            FirstHoveredScoresTextures = firstHoveredScoresTextures;
+
             LabelsTextures = labelsTextures;
             HoveredLabelsTextures = hoveredLabelsTextures;
 
             ScoresTextures = scoresTextures;
             HoveredScoresTextures = hoveredScoresTextures;
+
+            LastLabelsTextures = lastLabelsTextures;
+            LastHoveredLabelsTextures = lastHoveredLabelsTextures;
+
+            LastScoresTextures = lastScoresTextures;
+            LastHoveredScoresTextures = lastHoveredScoresTextures;
 
             PlayersNamesTextures = playersNamesTextures;
             PlayersPicsTextures = playersPicsTextures;
@@ -162,15 +177,25 @@ namespace NOubliezPas
         public static ThemeSelectionMenuStyle Load(XmlReader reader)
         {
             Color backgroundColor = new Color(0, 255, 0);
-            Texture backgroundImage = null;
+            ImagePart backgroundImage = null;
             TextureDisplayMode backgroundDisplayMode = TextureDisplayMode.Stretch;
 
-            Texture[] labelsTextures = null;
-            Texture[] hoveredLabelsTextures = null;
-            Texture[] scoresTextures = null;
-            Texture[] hoveredScoresTextures = null;
-            Texture[] playersNamesTextures = null;
-            Texture[] playersPicsTextures = null;
+            ImagePart[] firstLabelsTextures = null;
+            ImagePart[] firstHoveredLabelsTextures = null;
+            ImagePart[] firstScoresTextures = null;
+            ImagePart[] firstHoveredScoresTextures = null;
+            ImagePart[] labelsTextures = null;
+            ImagePart[] hoveredLabelsTextures = null;
+            ImagePart[] scoresTextures = null;
+            ImagePart[] hoveredScoresTextures = null;
+            ImagePart[] lastLabelsTextures = null;
+            ImagePart[] lastHoveredLabelsTextures = null;
+            ImagePart[] lastScoresTextures = null;
+            ImagePart[] lastHoveredScoresTextures = null;
+
+
+            ImagePart[] playersNamesTextures = null;
+            ImagePart[] playersPicsTextures = null;
             float themesLabelsBottomSpace = 10f;
             float themesListRightSpace = 20f;
             float playersPhotoSpace = 5f;
@@ -193,7 +218,7 @@ namespace NOubliezPas
                             {
                                 String r = reader.GetAttribute("src");
                                 if (r != null)
-                                    backgroundImage = new Texture(r);
+                                    backgroundImage = new ImagePart( new Texture(r) );
 
                                 r = reader.GetAttribute("mode");
                                 if (r != null)
@@ -204,6 +229,14 @@ namespace NOubliezPas
                                         backgroundDisplayMode = TextureDisplayMode.Stretch;
                                 }
                             }
+                            else if (reader.Name == "firstLabelsTextures")
+                                firstLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "firstHoveredLabelsTextures")
+                                firstHoveredLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "firstScoresTextures")
+                                firstScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "firstHoveredScoresTextures")
+                                firstHoveredScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "labelsTextures")
                                 labelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "hoveredLabelsTextures")
@@ -212,6 +245,14 @@ namespace NOubliezPas
                                 scoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "hoveredScoresTextures")
                                 hoveredScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "lastLabelsTextures")
+                                lastLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "lastHoveredLabelsTextures")
+                                lastHoveredLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "lastScoresTextures")
+                                lastScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
+                            else if (reader.Name == "lastHoveredScoresTextures")
+                                lastHoveredScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "playersNamesTextures")
                                 playersNamesTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "playersPicsTextures")
@@ -273,10 +314,18 @@ namespace NOubliezPas
                 backgroundColor,
                 backgroundImage,
                 backgroundDisplayMode,
+                firstLabelsTextures,
+                firstHoveredLabelsTextures,
+                firstScoresTextures,
+                firstHoveredScoresTextures,
                 labelsTextures, 
                 hoveredLabelsTextures,
                 scoresTextures,
                 hoveredScoresTextures,
+                lastLabelsTextures,
+                lastHoveredLabelsTextures,
+                lastScoresTextures,
+                lastHoveredScoresTextures,
                 playersNamesTextures,
                 playersPicsTextures,
                 themesLabelsBottomSpace,

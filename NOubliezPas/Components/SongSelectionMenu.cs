@@ -8,6 +8,8 @@ using kT.GUI;
 using SFML.Window;
 using SFML.Graphics;
 
+using NOubliezPas.Communication;
+
 namespace NOubliezPas
 {
     class SongSelectionMenu : Component
@@ -28,6 +30,21 @@ namespace NOubliezPas
             myTheme = theme;
         }
 
+        public void Activate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.SongSelectionMenuEnter);
+        }
+
+        public void Desactivate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.SongSelectionMenuExit);
+        }
+
+        public void ReadMessage(ControllerToGameMessage msg)
+        {
+
+        }
+
         public void OnKeyPressed(object sender, EventArgs e)
         {
             KeyEventArgs args = (KeyEventArgs)e;
@@ -36,12 +53,7 @@ namespace NOubliezPas
             {
                 // validation du choix de la chanson
                 if (args.Code == Keyboard.Key.Return)
-                {
-                    myApp.mustChangeComponent = true;
-                    myApp.newComponent = new SongTest(myApp, myPlayer, myTheme.GetSong(currentChoice));
-                    myApp.newComponent.Initialize();
-                    myApp.newComponent.LoadContent();
-                }
+                    myApp.ChangeComponent(new SongTest(myApp, myPlayer, myTheme.GetSong(currentChoice)));
 
                 // mouvement dans le menu
                 int oldChoice = currentChoice;

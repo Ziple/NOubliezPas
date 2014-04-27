@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
+using NOubliezPas.Communication;
+
 namespace NOubliezPas
 {
     interface Component
@@ -18,5 +20,11 @@ namespace NOubliezPas
         void Update( Stopwatch difftime );
 
         void Draw( Stopwatch difftime );
+
+        void ReadMessage( ControllerToGameMessage msg);
+
+        void Activate();
+
+        void Desactivate();
     }
 }

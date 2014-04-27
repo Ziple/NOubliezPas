@@ -7,7 +7,7 @@ namespace kT.GUI
 	{
 		public Color BackgroundColor = Color.Transparent;
 
-		Texture[] myFrameImages = new Texture[9];
+		ImagePart[] myFrameImages = new ImagePart[9];
 
 		Widget myContainedWidget;
 
@@ -32,10 +32,48 @@ namespace kT.GUI
 
 		public Texture[] BordersImages
 		{
-			get { return myFrameImages; }
+			get {
+                Texture[] ar = new Texture[9];
+                for (int i = 0; i < ar.Length; i++)
+                    ar[i] = myFrameImages[i].SourceTexture;
+
+                    return ar;
+            }
 			set
 			{
                 if( value != null )
+                {
+                    myFrameImages[0] = value[0] != null ? new ImagePart( value[0] ) : null;
+                    myFrameImages[1] = value[1] != null ? new ImagePart( value[1] ) : null;
+                    myFrameImages[2] = value[2] != null ? new ImagePart( value[2] ) : null;
+                    myFrameImages[3] = value[3] != null ? new ImagePart( value[3] ) : null;
+                    myFrameImages[4] = value[4] != null ? new ImagePart( value[4] ) : null;
+                    myFrameImages[5] = value[5] != null ? new ImagePart( value[5] ) : null;
+                    myFrameImages[6] = value[6] != null ? new ImagePart( value[6] ) : null;
+                    myFrameImages[7] = value[7] != null ? new ImagePart( value[7] ) : null;
+                    myFrameImages[8] = value[8] != null ? new ImagePart(value[8]) : null;
+                }
+                else
+                {
+                    for(uint i = 0; i < 9; i++)
+                        myFrameImages[i] = null;
+                }
+
+				if (myContainedWidget != null
+					&& myContainedWidget.Visible )
+					base.ResizeForChild(myContainedWidget, myContainedWidget.Size);
+			}
+		}
+
+        public ImagePart[] BordersImagesParts
+        {
+            get
+            {
+                return myFrameImages;
+            }
+            set
+            {
+                if (value != null)
                 {
                     myFrameImages[0] = value[0];
                     myFrameImages[1] = value[1];
@@ -49,15 +87,15 @@ namespace kT.GUI
                 }
                 else
                 {
-                    for(uint i = 0; i < 9; i++)
+                    for (uint i = 0; i < 9; i++)
                         myFrameImages[i] = null;
                 }
 
-				if (myContainedWidget != null
-					&& myContainedWidget.Visible )
-					base.ResizeForChild(myContainedWidget, myContainedWidget.Size);
-			}
-		}
+                if (myContainedWidget != null
+                    && myContainedWidget.Visible)
+                    base.ResizeForChild(myContainedWidget, myContainedWidget.Size);
+            }
+        }
 
 		/// <summary>
 		/// Returns he rectangle that would be occupied by the borders without the contained widget.
@@ -72,11 +110,11 @@ namespace kT.GUI
 				int leftBorderSize = 0;
 
 				if (myFrameImages[0] != null)
-					leftBorderSize = (int)myFrameImages[0].Size.X;
+					leftBorderSize = (int)myFrameImages[0].SourceRectangle.Width;
 				if (myFrameImages[3] != null)
-                    leftBorderSize = myFrameImages[3].Size.X > leftBorderSize ? (int)myFrameImages[3].Size.X : leftBorderSize;
+                    leftBorderSize = myFrameImages[3].SourceRectangle.Width > leftBorderSize ? (int)myFrameImages[3].SourceRectangle.Width : leftBorderSize;
 				if (myFrameImages[6] != null)
-                    leftBorderSize = myFrameImages[6].Size.X > leftBorderSize ?(int) myFrameImages[6].Size.X : leftBorderSize;
+                    leftBorderSize = myFrameImages[6].SourceRectangle.Width > leftBorderSize ? (int)myFrameImages[6].SourceRectangle.Width : leftBorderSize;
 
 				return leftBorderSize;
 			}
@@ -89,11 +127,11 @@ namespace kT.GUI
 				int rightBorderSize = 0;
 
 				if (myFrameImages[2] != null)
-                    rightBorderSize = (int)myFrameImages[2].Size.X;
+                    rightBorderSize = (int)myFrameImages[2].SourceRectangle.Width;
 				if (myFrameImages[5] != null)
-                    rightBorderSize = myFrameImages[5].Size.X > rightBorderSize ? (int)myFrameImages[5].Size.X : rightBorderSize;
+                    rightBorderSize = myFrameImages[5].SourceRectangle.Width > rightBorderSize ? (int)myFrameImages[5].SourceRectangle.Width : rightBorderSize;
 				if (myFrameImages[8] != null)
-                    rightBorderSize = myFrameImages[8].Size.X > rightBorderSize ? (int)myFrameImages[8].Size.X : rightBorderSize;
+                    rightBorderSize = myFrameImages[8].SourceRectangle.Width > rightBorderSize ? (int)myFrameImages[8].SourceRectangle.Width : rightBorderSize;
 
 				return rightBorderSize;
 			}
@@ -106,11 +144,11 @@ namespace kT.GUI
 				int topBorderSize = 0;
 
 				if (myFrameImages[2] != null)
-                    topBorderSize = (int)myFrameImages[2].Size.Y;
+                    topBorderSize = (int)myFrameImages[2].SourceRectangle.Height;
 				if (myFrameImages[1] != null)
-                    topBorderSize = myFrameImages[1].Size.Y > topBorderSize ? (int)myFrameImages[1].Size.Y : topBorderSize;
+                    topBorderSize = myFrameImages[1].SourceRectangle.Height > topBorderSize ? (int)myFrameImages[1].SourceRectangle.Height : topBorderSize;
 				if (myFrameImages[0] != null)
-                    topBorderSize = myFrameImages[0].Size.Y > topBorderSize ? (int)myFrameImages[0].Size.Y : topBorderSize;
+                    topBorderSize = myFrameImages[0].SourceRectangle.Height > topBorderSize ? (int)myFrameImages[0].SourceRectangle.Height : topBorderSize;
 				return topBorderSize;
 			}
 		}
@@ -122,11 +160,11 @@ namespace kT.GUI
 				int bottomBorderSize = 0;
 
 				if (myFrameImages[8] != null)
-                    bottomBorderSize = (int)myFrameImages[8].Size.Y;
+                    bottomBorderSize = (int)myFrameImages[8].SourceRectangle.Height;
 				if (myFrameImages[7] != null)
-                    bottomBorderSize = myFrameImages[7].Size.Y > bottomBorderSize ? (int)myFrameImages[7].Size.Y : bottomBorderSize;
+                    bottomBorderSize = myFrameImages[7].SourceRectangle.Height > bottomBorderSize ? (int)myFrameImages[7].SourceRectangle.Height : bottomBorderSize;
 				if (myFrameImages[6] != null)
-                    bottomBorderSize = myFrameImages[6].Size.Y > bottomBorderSize ? (int)myFrameImages[6].Size.Y : bottomBorderSize;
+                    bottomBorderSize = myFrameImages[6].SourceRectangle.Height > bottomBorderSize ? (int)myFrameImages[6].SourceRectangle.Height : bottomBorderSize;
 
 				return bottomBorderSize;
 			}
@@ -203,63 +241,73 @@ namespace kT.GUI
 				drawEvent.Painter.DrawRectangle(geometryRegion, BackgroundColor);
 
 				if (myFrameImages[0] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[0],
+					drawEvent.Painter.DrawImage(myFrameImages[0].SourceTexture,
 												new FloatRect(geometryRegion.Left - myFrameImages[0].Size.X,
 															  geometryRegion.Top - myFrameImages[0].Size.Y,
 															  myFrameImages[0].Size.X,
-															  myFrameImages[0].Size.Y) );
+															  myFrameImages[0].Size.Y),
+                                                myFrameImages[0].SourceRectangle);
 
 				if (myFrameImages[1] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[1],
+                    drawEvent.Painter.DrawImage(myFrameImages[1].SourceTexture,
 												new FloatRect(geometryRegion.Left,
 															  geometryRegion.Top - myFrameImages[1].Size.Y,
 															  geometryRegion.Width,
-															  myFrameImages[1].Size.Y) );
+                                                              myFrameImages[1].Size.Y),
+                                                myFrameImages[1].SourceRectangle);
 
 
 				if (myFrameImages[2] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[2],
+                    drawEvent.Painter.DrawImage(myFrameImages[2].SourceTexture,
 												new FloatRect(geometryRegion.Left + geometryRegion.Width,
 															  geometryRegion.Top - myFrameImages[2].Size.Y,
 															  myFrameImages[2].Size.X,
-															  myFrameImages[2].Size.Y) );
+                                                              myFrameImages[2].Size.Y),
+                                                myFrameImages[2].SourceRectangle);
 
 				if (myFrameImages[3] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[3],
+                    drawEvent.Painter.DrawImage(myFrameImages[3].SourceTexture,
 												new FloatRect(geometryRegion.Left - myFrameImages[3].Size.X,
 															  geometryRegion.Top,
 															  myFrameImages[3].Size.X,
-															  geometryRegion.Height) );
+                                                              geometryRegion.Height),
+                                                myFrameImages[3].SourceRectangle);
 
 				if (myFrameImages[4] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[4], geometryRegion, Color.White);
+                    drawEvent.Painter.DrawImage(myFrameImages[4].SourceTexture,
+                                                geometryRegion,
+                                                myFrameImages[4].SourceRectangle);
 
 				if (myFrameImages[5] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[5],
+                    drawEvent.Painter.DrawImage(myFrameImages[5].SourceTexture,
                                                 new FloatRect(geometryRegion.Left + geometryRegion.Width,
 															  geometryRegion.Top,
 															  myFrameImages[5].Size.X,
-															  geometryRegion.Height) );
+                                                              geometryRegion.Height),
+                                                myFrameImages[5].SourceRectangle);
 
 				if (myFrameImages[6] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[6],
+                    drawEvent.Painter.DrawImage(myFrameImages[6].SourceTexture,
 												new FloatRect(geometryRegion.Left - myFrameImages[6].Size.X,
                                                               geometryRegion.Top + geometryRegion.Height,
 															  myFrameImages[6].Size.X,
-															  myFrameImages[6].Size.Y) );
+                                                              myFrameImages[6].Size.Y),
+                                                myFrameImages[6].SourceRectangle);
 				if (myFrameImages[7] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[7],
+                    drawEvent.Painter.DrawImage(myFrameImages[7].SourceTexture,
 												new FloatRect(geometryRegion.Left,
                                                               geometryRegion.Top + geometryRegion.Height,
 															  geometryRegion.Width,
-															  myFrameImages[7].Size.Y) );
+                                                              myFrameImages[7].Size.Y),
+                                                myFrameImages[7].SourceRectangle);
 
 				if (myFrameImages[8] != null)
-					drawEvent.Painter.DrawImage(myFrameImages[8],
+                    drawEvent.Painter.DrawImage(myFrameImages[8].SourceTexture,
                                                 new FloatRect(geometryRegion.Left + geometryRegion.Width,
                                                               geometryRegion.Top + geometryRegion.Height,
 															  myFrameImages[8].Size.X,
-															  myFrameImages[8].Size.Y) );
+                                                              myFrameImages[8].Size.Y),
+                                                myFrameImages[8].SourceRectangle);
 			}
 
 			// We also check if we can draw the inner widget.

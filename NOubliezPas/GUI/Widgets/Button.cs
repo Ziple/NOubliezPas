@@ -7,6 +7,7 @@ namespace kT.GUI
 	/// <summary>
 	/// Basic class to implment buttons that can be clicked and hovered.
 	/// </summary>
+    /*
     public class Button : Frame
     {
         public enum ButtonState
@@ -196,4 +197,5 @@ namespace kT.GUI
             return this;
         }
     }
+     * */
 }

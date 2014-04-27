@@ -7,6 +7,7 @@ using System.Diagnostics;
 using SFML.Window;
 using SFML.Graphics;
 using kT.GUI;
+using NOubliezPas.Communication;
 
 namespace NOubliezPas
 {
@@ -34,6 +35,21 @@ namespace NOubliezPas
             myApp = app;
             myPlayer = player;
             mySong = song;
+        }
+
+        public void Activate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.SongTestEnter);
+        }
+
+        public void Desactivate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.SongTestExit);
+        }
+
+        public void ReadMessage(ControllerToGameMessage msg)
+        {
+
         }
 
         public void OnKeyPressed(object sender, EventArgs e)
@@ -115,12 +131,7 @@ namespace NOubliezPas
 
                 // reste des joueurs à faire passer au blind test
                 if (pl != null)
-                {
-                    myApp.mustChangeComponent = true;
-                    myApp.newComponent = new BlindTest(myApp, pl, myApp.game.SharedSong);
-                    myApp.newComponent.Initialize();
-                    myApp.newComponent.LoadContent();
-                }
+                    myApp.ChangeComponent(new BlindTest(myApp, pl, myApp.game.SharedSong));
                 else
                     throw new Exception("Pas possible de démarrer le blind test? WTF!");
 
@@ -128,10 +139,7 @@ namespace NOubliezPas
             else if (myApp.game.RemainingThemeAvalaible())
             {
                 // reste des themes
-                myApp.mustChangeComponent = true;
-                myApp.newComponent = new ThemeSelectionMenu(myApp);
-                myApp.newComponent.Initialize();
-                myApp.newComponent.LoadContent();
+                myApp.ChangeComponent(new ThemeSelectionMenu(myApp));
             }
             else
                 throw new Exception("Plus de theme restant mais ne peut pas démarrer le blind test? WTF!");
@@ -219,6 +227,9 @@ namespace NOubliezPas
                 frame.Visible = false;
                 waiting = true;
             }
+
+            if (waitingForAnswer)
+                myApp.OurGameToControllerPipe.SendMessage(GameToControllerWindowMessage.ApplicationWaitingAnswer);
         }
 
         public void Draw(Stopwatch time)

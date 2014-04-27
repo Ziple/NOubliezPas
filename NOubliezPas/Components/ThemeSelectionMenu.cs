@@ -8,6 +8,8 @@ using kT.GUI;
 using SFML.Graphics;
 using SFML.Window;
 
+using NOubliezPas.Communication;
+
 namespace NOubliezPas
 {
     class ThemeSelectionMenu: Component
@@ -23,7 +25,7 @@ namespace NOubliezPas
         HorizontalLayout playersLayout;
 
         int currentChoice = 0;
-        List<HorizontalLayout> themesLayouts = new List<HorizontalLayout>();
+        List<HorizontalLayout> themes = new List<HorizontalLayout>();
 
         bool displayScores = false;
 
@@ -33,21 +35,33 @@ namespace NOubliezPas
             myGame = app.game;
         }
 
+        public void Activate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.ThemeSelectionMenuEnter);
+        }
+
+        public void Desactivate()
+        {
+            myApp.SendMessage(GameToControllerWindowMessage.ThemeSelectionMenuExit);
+        }
+
+        public void ReadMessage( ControllerToGameMessage msg )
+        {
+
+        }
+
         public void OnKeyPressed(object sender, EventArgs e)
         {
             KeyEventArgs args = (KeyEventArgs)e;
 
-            if (themesLayouts.Count > 0)
+            if (themes.Count > 0)
             {
                 // validation du choix du theme
                 if (args.Code == Keyboard.Key.Return)
                 {
                     Theme chosenTheme = myGame.GetTheme(currentChoice);
-                    myApp.mustChangeComponent = true;
-                    myApp.newComponent = new SongSelectionMenu(myApp, myPlayer, chosenTheme);
                     myPlayer.ChosenThemes.Add(chosenTheme);
-                    myApp.newComponent.Initialize();
-                    myApp.newComponent.LoadContent();
+                    myApp.ChangeComponent(new SongSelectionMenu(myApp, myPlayer, chosenTheme));
                 }
 
                 // déplacement dans le menu
@@ -65,155 +79,16 @@ namespace NOubliezPas
             }
         }
 
-        void ChangeChoice()
+        void FitFrames()
         {
-            foreach(HorizontalLayout themeHLayout in themesLayouts )
+            // On met toutes les frames à la même taille
             {
-                Frame themeNameFrame = (Frame)themeHLayout.Widgets[0];
-                Label themeNameLabel = (Label)themeNameFrame.ContainedWidget;
-
-                Frame scoreFrame = (Frame)themeHLayout.Widgets[1];
-                Label scoreLabel = (Label)scoreFrame.ContainedWidget;
-
-                themeNameFrame.BordersImages = myStyle.LabelsTextures;
-                themeNameLabel.TextColor = myStyle.FontNormalColor;
-
-                scoreFrame.BordersImages = myStyle.ScoresTextures;
-                scoreLabel.TextColor = myStyle.FontNormalColor;
-            }
-
-            HorizontalLayout themeLayout = themesLayouts[currentChoice];
-            Frame cthemeNameFrame = (Frame)themeLayout.Widgets[0];
-            Label cthemeNameLabel = (Label)cthemeNameFrame.ContainedWidget;
-
-            Frame cscoreFrame = (Frame)themeLayout.Widgets[1];
-            Label cscoreLabel = (Label)cscoreFrame.ContainedWidget;
-
-            cthemeNameFrame.BordersImages = myStyle.HoveredLabelsTextures;
-            cthemeNameLabel.TextColor = myStyle.FontHoveredColor;
-
-            cscoreFrame.BordersImages = myStyle.HoveredScoresTextures;
-            cscoreLabel.TextColor = myStyle.FontHoveredColor;
-        }
-
-        public void Initialize()
-        {
-        }
-
-        public void LoadContent()
-        {
-            // récupération du style
-            myStyle = myApp.guiStyle.ThemeSelectionMenuStyle;
-
-            myPlayer = null;
-            themesLayouts = new List<HorizontalLayout>();
-
-            if (myGame.NumPlayers > 0)
-            {
-                // on trouve le joueur concerné par la sélection
-                int numSelections = myGame.Players[0].ChosenThemes.Count;
-
-                for (int i = 1; i < myGame.NumPlayers; i++)
-                {
-                    if (myGame.Players[i].ChosenThemes.Count < numSelections)
-                    {
-                        myPlayer = myGame.Players[i];
-                        break;
-                    }
-                }
-
-                if (myPlayer == null)
-                    myPlayer = myGame.Players[0];
-
-                // on détermine si l'on doit afficher les scores.
-                for (int i = 0; i < myGame.NumPlayers; i++)
-                {
-                    if (myGame.Players[i].Score > 0)
-                    {
-                        displayScores = true;
-                        break;
-                    }
-                }
-            }
-            else
-                throw new Exception("Pas de joueur?");
-
-            Texture[] labelTextures = myStyle.LabelsTextures;
-            Texture[] scoreTextures = myStyle.ScoresTextures;
-            Texture[] playersNamesTextures = myStyle.PlayersNamesTextures;
-            Texture[] playersPicsTextures = myStyle.PlayersPicsTextures;
-            float themesLabelsBottomSpace = myStyle.ThemesLabelsBottomSpace;
-            float themesListRightSpace = myStyle.ThemesListRightSpace;
-            float playersSpace = myStyle.PlayersSpace;
-            Vector2f picsSize = myStyle.PicsSize;
-            Font font = myStyle.Font;
-            uint fontSize = myStyle.FontSize;
-
-            myUIManager = new UIManager(myApp.window);
-
-            DCFont myFont = new DCFont(font);
-
-            // Layout principal contenant tout le reste
-            mainLayout = new HorizontalLayout(myUIManager, null);
-            mainLayout.Visible = true;
-
-            // Affichage des thèmes
-            {
-                themesLayout = new VerticalLayout(myUIManager, mainLayout);
-                themesLayout.Visible = true;
-                mainLayout.Add(themesLayout);
-
-                for (int i = 0; i < myGame.NumThemes; i++)
-                {
-                    HorizontalLayout themeHLayout = new HorizontalLayout(myUIManager, themesLayout);
-                    themeHLayout.Visible = true;
-                    themesLayout.Add(themeHLayout);
-                    themesLayouts.Add(themeHLayout);
-
-                    if (!myGame.IsThemeAvalaible(myGame.GetTheme(i)))
-                        themeHLayout.Tint = new Color(125, 125, 125);
-
-                    // Frame contenant le nom du thème
-                    {
-                        Frame themeFrame = new Frame(myUIManager, themeHLayout);
-                        themeFrame.BordersImages = labelTextures;
-                        themeFrame.Visible = true;
-                        themeHLayout.Add(themeFrame);
-
-                        Label themesNamelabel = new Label(myUIManager, themeFrame, myFont, myGame.GetTheme(i).Name, fontSize);
-                        themesNamelabel.Tint = Color.White;
-                        themesNamelabel.Visible = true;
-                        themeFrame.ContainedWidget = themesNamelabel;
-                    }
-
-                    // Frame contenant le nombre de points du thème
-                    {
-                        Frame ptsFrame = new Frame(myUIManager, themeHLayout);
-                        ptsFrame.BordersImages = scoreTextures;
-                        ptsFrame.Visible = true;
-                        themeHLayout.Add(ptsFrame);
-
-                        Label ptslabel = new Label(myUIManager, ptsFrame, myFont, myGame.GetTheme(i).Points.ToString(), fontSize );
-                        ptslabel.Tint = Color.White;
-                        ptslabel.Visible = true;
-                        ptsFrame.ContainedWidget = ptslabel;
-                    }
-
-                    if (i < myGame.NumThemes - 1)
-                    {
-                        VerticalSpacer sp = new VerticalSpacer(myUIManager, themesLayout, themesLabelsBottomSpace);
-                        sp.Visible = true;
-                        themesLayout.Add(sp);
-                    }
-                }
-
-                // On met toutes les frames à la même taille
                 Vector2f fLMax = new Vector2f(0f, 0f);
                 Vector2f fSMax = new Vector2f(0f, 0f);
 
                 foreach (Widget entry in themesLayout.Widgets)
                 {
-                    if(entry.GetType() == typeof(HorizontalLayout))
+                    if (entry.GetType() == typeof(HorizontalLayout))
                     {
                         HorizontalLayout vLayout = (HorizontalLayout)entry;
 
@@ -244,86 +119,9 @@ namespace NOubliezPas
                     }
                 }
             }
-
-            // Ajout d'un spacer
-            HorizontalSpacer msp = new HorizontalSpacer(myUIManager, mainLayout, themesListRightSpace);
-            msp.Visible = true;
-            mainLayout.Add(msp);
-
-            // Affichage des noms des joueurs (éventuellement leurs scores)
+            // On met toutes les frames à la même taille
+            // les photos sont carrées
             {
-                playersLayout = new HorizontalLayout(myUIManager, mainLayout);
-                playersLayout.Visible = true;
-                mainLayout.Add(playersLayout);
-
-                for (int i = 0; i < myGame.NumPlayers; i++)
-                {
-                    Player player = myGame.Players[i];
-
-                    VerticalLayout playerVLayout = new VerticalLayout(myUIManager, playersLayout);
-                    playerVLayout.Alignment = HorizontalAlignment.Center;
-
-                    playerVLayout.Visible = true;
-                    playersLayout.Add(playerVLayout);
-
-                    // Chargement de la photo du joueur
-                    {
-                        Frame photoFrame = new Frame(myUIManager, playerVLayout); ;
-                        photoFrame.BordersImages = playersPicsTextures;
-                        photoFrame.Visible = true;
-                        playerVLayout.Add(photoFrame);
-
-                        Caption playerCaption = new Caption(myUIManager, photoFrame);
-                        playerCaption.Visible = true;
-
-                        Texture tex = new Texture(player.PhotoSrc);
-                        ImagePart img = new ImagePart(tex);
-                        playerCaption.ImagePart = img;
-                        playerCaption.Size = picsSize;
-
-                        // ajout de la photo
-                        photoFrame.ContainedWidget = playerCaption;
-                    }
-
-                    // Ajout d'un spacer
-                    VerticalSpacer vsp = new VerticalSpacer(myUIManager, playerVLayout, 5f);
-                    vsp.Visible = true;
-                    playerVLayout.Add(vsp);
-
-                    // Affichage du score du joueur
-                    {
-                        Frame playerNameFrame = new Frame(myUIManager, playerVLayout);
-                        playerNameFrame.BordersImages = playersNamesTextures;
-                        playerNameFrame.Visible = true;
-                        playerVLayout.Add(playerNameFrame);
-
-                        string str = player.Name;
-                        if (displayScores)
-                            str += " - " + player.Score.ToString();
-
-                        Label scoreLabel = new Label(myUIManager, playerNameFrame, myFont, str, fontSize);
-
-                        if (player == myPlayer)
-                            scoreLabel.Tint = Color.Black;
-                        else
-                            scoreLabel.Tint = myStyle.FontNormalColor;
-
-                        scoreLabel.Visible = true;
-
-                        playerNameFrame.ContainedWidget = scoreLabel;
-                    }
-
-                    // on ajoute le spacer horizontal que si on ajoute pas le dernier joueur
-                    if( i < myGame.NumPlayers-1 )
-                    {
-                        HorizontalSpacer sp = new HorizontalSpacer(myUIManager, playersLayout, playersSpace);
-                        sp.Visible = true;
-                        playersLayout.Add(sp);
-                    }
-                }
-
-                // On met toutes les frames à la même taille
-                // les photos sont carrées
                 float fLMax = 0f;
                 Vector2f fSMax = new Vector2f(0f, 0f);
 
@@ -361,11 +159,270 @@ namespace NOubliezPas
                         fS.ContainedWidget.Expand();
                     }
                 }
+            }
 
-                // repositionne
-                Vector2f pos = playersLayout.CenterPosition;
-                pos.Y = mainLayout.Size.Y * 0.5f;
-                playersLayout.CenterPosition = pos;
+            // repositionne
+            Vector2f pos = playersLayout.CenterPosition;
+            pos.Y = mainLayout.Size.Y * 0.5f;
+            playersLayout.CenterPosition = pos;
+        }
+
+        void ChangeChoice()
+        {
+            for (int i = 0; i < themes.Count; i++ )
+            {
+                HorizontalLayout themeHLayout = (HorizontalLayout)themes[i];
+                Frame themeNameFrame = (Frame)themeHLayout.Widgets[0];
+                Label themeNameLabel = (Label)themeNameFrame.ContainedWidget;
+
+                Frame scoreFrame = (Frame)themeHLayout.Widgets[1];
+                Label scoreLabel = (Label)scoreFrame.ContainedWidget;
+
+                if( i == 0 )
+                    themeNameFrame.BordersImagesParts = myStyle.FirstLabelsTextures;
+                else if( i == themes.Count-1 )
+                    themeNameFrame.BordersImagesParts = myStyle.LastLabelsTextures;
+                else
+                    themeNameFrame.BordersImagesParts = myStyle.LabelsTextures;
+                themeNameLabel.TextColor = myStyle.FontNormalColor;
+
+                if( i == 0 )
+                    scoreFrame.BordersImagesParts = myStyle.FirstScoresTextures;
+                else if( i == themes.Count - 1 )
+                    scoreFrame.BordersImagesParts = myStyle.LastScoresTextures;
+                else
+                    scoreFrame.BordersImagesParts = myStyle.ScoresTextures;
+                scoreLabel.TextColor = myStyle.FontNormalColor;
+            }
+
+            HorizontalLayout themeLayout = themes[currentChoice];
+            Frame cthemeNameFrame = (Frame)themeLayout.Widgets[0];
+            Label cthemeNameLabel = (Label)cthemeNameFrame.ContainedWidget;
+
+            Frame cscoreFrame = (Frame)themeLayout.Widgets[1];
+            Label cscoreLabel = (Label)cscoreFrame.ContainedWidget;
+
+            if( currentChoice == 0 )
+                cthemeNameFrame.BordersImagesParts = myStyle.FirstHoveredLabelsTextures;
+            else if( currentChoice == themes.Count-1 )
+                cthemeNameFrame.BordersImagesParts = myStyle.LastHoveredLabelsTextures;
+            else
+                cthemeNameFrame.BordersImagesParts = myStyle.HoveredLabelsTextures;
+
+            cthemeNameLabel.TextColor = myStyle.FontHoveredColor;
+
+            if (currentChoice == 0)
+                cscoreFrame.BordersImagesParts = myStyle.FirstHoveredScoresTextures;
+            else if (currentChoice == themes.Count - 1)
+                cscoreFrame.BordersImagesParts = myStyle.LastHoveredScoresTextures;
+            else
+                cscoreFrame.BordersImagesParts = myStyle.HoveredScoresTextures;
+            cscoreLabel.TextColor = myStyle.FontHoveredColor;
+
+            FitFrames();
+        }
+
+        public void Initialize()
+        {
+        }
+
+        public void LoadContent()
+        {
+            // récupération du style
+            myStyle = myApp.guiStyle.ThemeSelectionMenuStyle;
+
+            myPlayer = null;
+            themes = new List<HorizontalLayout>();
+
+            if (myGame.NumPlayers > 0)
+            {
+                // on trouve le joueur concerné par la sélection
+                int numSelections = myGame.Players[0].ChosenThemes.Count;
+
+                for (int i = 1; i < myGame.NumPlayers; i++)
+                {
+                    if (myGame.Players[i].ChosenThemes.Count < numSelections)
+                    {
+                        myPlayer = myGame.Players[i];
+                        break;
+                    }
+                }
+
+                if (myPlayer == null)
+                    myPlayer = myGame.Players[0];
+
+                // on détermine si l'on doit afficher les scores.
+                for (int i = 0; i < myGame.NumPlayers; i++)
+                {
+                    if (myGame.Players[i].Score > 0)
+                    {
+                        displayScores = true;
+                        break;
+                    }
+                }
+            }
+            else
+                throw new Exception("Pas de joueur?");
+
+            ImagePart[] labelTextures = myStyle.LabelsTextures;
+            ImagePart[] scoreTextures = myStyle.ScoresTextures;
+            ImagePart[] playersNamesTextures = myStyle.PlayersNamesTextures;
+            ImagePart[] playersPicsTextures = myStyle.PlayersPicsTextures;
+            float themesLabelsBottomSpace = myStyle.ThemesLabelsBottomSpace;
+            float themesListRightSpace = myStyle.ThemesListRightSpace;
+            float playersSpace = myStyle.PlayersSpace;
+            Vector2f picsSize = myStyle.PicsSize;
+            Font font = myStyle.Font;
+            uint fontSize = myStyle.FontSize;
+
+            myUIManager = new UIManager(myApp.window);
+
+            DCFont myFont = new DCFont(font);
+
+            // Layout principal contenant tout le reste
+            mainLayout = new HorizontalLayout(myUIManager, null);
+            mainLayout.Visible = true;
+
+            // Affichage des thèmes
+            {
+                themesLayout = new VerticalLayout(myUIManager, mainLayout);
+                themesLayout.Visible = true;
+                mainLayout.Add(themesLayout);
+
+                for (int i = 0; i < myGame.NumThemes; i++)
+                {
+                    HorizontalLayout themeHLayout = new HorizontalLayout(myUIManager, themesLayout);
+                    themeHLayout.Visible = true;
+                    themesLayout.Add(themeHLayout);
+                    themes.Add(themeHLayout);
+
+                    if (!myGame.IsThemeAvalaible(myGame.GetTheme(i)))
+                        themeHLayout.Tint = new Color(125, 125, 125);
+
+                    // Frame contenant le nom du thème
+                    {
+                        Frame themeFrame = new Frame(myUIManager, themeHLayout);
+                        if (i == 0)
+                            themeFrame.BordersImagesParts = myStyle.FirstLabelsTextures;
+                        else if (i == myGame.NumThemes - 1)
+                            themeFrame.BordersImagesParts = myStyle.LastLabelsTextures;
+                        else
+                            themeFrame.BordersImagesParts = myStyle.LabelsTextures;
+
+                        themeFrame.Visible = true;
+                        themeHLayout.Add(themeFrame);
+
+                        Label themesNamelabel = new Label(myUIManager, themeFrame, myFont, myGame.GetTheme(i).Name, fontSize);
+                        themesNamelabel.Tint = Color.White;
+                        themesNamelabel.Visible = true;
+                        themeFrame.ContainedWidget = themesNamelabel;
+                    }
+
+                    // Frame contenant le nombre de points du thème
+                    {
+                        Frame ptsFrame = new Frame(myUIManager, themeHLayout);
+
+                        if (i == 0)
+                            ptsFrame.BordersImagesParts = myStyle.FirstScoresTextures;
+                        else if (i == myGame.NumThemes - 1)
+                            ptsFrame.BordersImagesParts = myStyle.LastScoresTextures;
+                        else
+                            ptsFrame.BordersImagesParts = myStyle.ScoresTextures;
+
+                        ptsFrame.Visible = true;
+                        themeHLayout.Add(ptsFrame);
+
+                        Label ptslabel = new Label(myUIManager, ptsFrame, myFont, myGame.GetTheme(i).Points.ToString(), fontSize );
+                        ptslabel.Tint = Color.White;
+                        ptslabel.Visible = true;
+                        ptsFrame.ContainedWidget = ptslabel;
+                    }
+
+                    if (i < myGame.NumThemes - 1)
+                    {
+                        VerticalSpacer sp = new VerticalSpacer(myUIManager, themesLayout, themesLabelsBottomSpace);
+                        sp.Visible = true;
+                        themesLayout.Add(sp);
+                    }
+                }
+            }
+
+            // Ajout d'un spacer
+            HorizontalSpacer msp = new HorizontalSpacer(myUIManager, mainLayout, themesListRightSpace);
+            msp.Visible = true;
+            mainLayout.Add(msp);
+
+            // Affichage des noms des joueurs (éventuellement leurs scores)
+            {
+                playersLayout = new HorizontalLayout(myUIManager, mainLayout);
+                playersLayout.Visible = true;
+                mainLayout.Add(playersLayout);
+
+                for (int i = 0; i < myGame.NumPlayers; i++)
+                {
+                    Player player = myGame.Players[i];
+
+                    VerticalLayout playerVLayout = new VerticalLayout(myUIManager, playersLayout);
+                    playerVLayout.Alignment = HorizontalAlignment.Center;
+
+                    playerVLayout.Visible = true;
+                    playersLayout.Add(playerVLayout);
+
+                    // Chargement de la photo du joueur
+                    {
+                        Frame photoFrame = new Frame(myUIManager, playerVLayout); ;
+                        photoFrame.BordersImagesParts = playersPicsTextures;
+                        photoFrame.Visible = true;
+                        playerVLayout.Add(photoFrame);
+
+                        Caption playerCaption = new Caption(myUIManager, photoFrame);
+                        playerCaption.Visible = true;
+
+                        Texture tex = new Texture(player.PhotoSrc);
+                        ImagePart img = new ImagePart(tex);
+                        playerCaption.ImagePart = img;
+                        playerCaption.Size = picsSize;
+
+                        // ajout de la photo
+                        photoFrame.ContainedWidget = playerCaption;
+                    }
+
+                    // Ajout d'un spacer
+                    VerticalSpacer vsp = new VerticalSpacer(myUIManager, playerVLayout, 5f);
+                    vsp.Visible = true;
+                    playerVLayout.Add(vsp);
+
+                    // Affichage du score du joueur
+                    {
+                        Frame playerNameFrame = new Frame(myUIManager, playerVLayout);
+                        playerNameFrame.BordersImagesParts = playersNamesTextures;
+                        playerNameFrame.Visible = true;
+                        playerVLayout.Add(playerNameFrame);
+
+                        string str = player.Name;
+                        if (displayScores)
+                            str += " - " + player.Score.ToString();
+
+                        Label scoreLabel = new Label(myUIManager, playerNameFrame, myFont, str, fontSize);
+
+                        if (player == myPlayer)
+                            scoreLabel.Tint = Color.Black;
+                        else
+                            scoreLabel.Tint = myStyle.FontNormalColor;
+
+                        scoreLabel.Visible = true;
+
+                        playerNameFrame.ContainedWidget = scoreLabel;
+                    }
+
+                    // on ajoute le spacer horizontal que si on ajoute pas le dernier joueur
+                    if( i < myGame.NumPlayers-1 )
+                    {
+                        HorizontalSpacer sp = new HorizontalSpacer(myUIManager, playersLayout, playersSpace);
+                        sp.Visible = true;
+                        playersLayout.Add(sp);
+                    }
+                }
             }
 
             currentChoice = myGame.GetNextAcceptableChoice(-1);
@@ -386,7 +443,7 @@ namespace NOubliezPas
 
             if( myStyle.BackgroundImage != null )
             {
-                ImagePart part= new ImagePart(myStyle.BackgroundImage);
+                ImagePart part= myStyle.BackgroundImage;
                 myUIManager.Painter.Begin();
                 if( myStyle.BackgroundDisplayMode == TextureDisplayMode.Stretch )
                     myUIManager.Painter.DrawImage(part.SourceTexture, new FloatRect(0f, 0f, myUIManager.ScreenSize.X, myUIManager.ScreenSize.Y), part.SourceRectangle);
