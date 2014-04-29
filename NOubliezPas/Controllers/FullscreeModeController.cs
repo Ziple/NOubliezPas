@@ -19,15 +19,11 @@ namespace NOubliezPas.Controllers
             base(launcher)
         {
             hBox = new HBox();
+            Add(hBox);
 
             fBtn = new CheckButton("Mode plein écran");
             fBtn.Toggled += this.OnToggle;
             hBox.Add(fBtn);
-        }
-
-        public override Box GetPaneBox()
-        {
-            return hBox;
         }
 
         public override void ReadMessage(GameToControllerWindowMessage msg)

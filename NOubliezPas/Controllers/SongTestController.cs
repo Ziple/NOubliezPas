@@ -12,7 +12,6 @@ namespace NOubliezPas.Controllers
 {
     class SongTestController: Controller
     {
-        VBox vBox = null;
         HBox hBox = null;
         Label answerLabel = null;
         Entry answerEntry = null;
@@ -26,11 +25,9 @@ namespace NOubliezPas.Controllers
         public SongTestController( GUILauncher guiLauncher ):
             base(guiLauncher)
         {
-            //Create the main vertical box
-            vBox = new VBox();
 
             hBox = new HBox();
-            vBox.Add(hBox);
+            Add(hBox);
 
             // Ajout du label
             answerLabel = new Label("Réponse: ");
@@ -53,12 +50,7 @@ namespace NOubliezPas.Controllers
             analyzeBtn.Sensitive = false;
 
             // show all widgets
-            vBox.ShowAll();
-        }
-
-        public override Box GetPaneBox()
-        {
-            return vBox;
+            ShowAll();
         }
 
         public override void ReadMessage( GameToControllerWindowMessage msg )
@@ -96,7 +88,7 @@ namespace NOubliezPas.Controllers
         {
             if (currentAnalyzedWords != null)
             {
-                vBox.Remove(currentAnalyzedWords);
+                Remove(currentAnalyzedWords);
                 currentAnalyzedWords = null;
             }
 
@@ -144,7 +136,7 @@ namespace NOubliezPas.Controllers
 
                 currentAnalyzedWords.ShowAll();
 
-                vBox.Add(currentAnalyzedWords);
+                Add(currentAnalyzedWords);
 
                 analyzeBtn.Sensitive = false;
 

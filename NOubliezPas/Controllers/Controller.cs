@@ -10,7 +10,7 @@ using NOubliezPas.Communication;
 
 namespace NOubliezPas.Controllers
 {
-    class Controller
+    class Controller: VBox
     {
         protected GUILauncher myGUILauncher;
 
@@ -19,13 +19,13 @@ namespace NOubliezPas.Controllers
             myGUILauncher = launcher;
         }
 
-        public virtual void Activate()
+        public virtual void ActivateController()
         {}
 
-        public virtual void Desactivate()
+        public virtual void DesactivateController()
         {}
 
-        public virtual Box GetPaneBox() { return null; }
+        public virtual Box GetPaneBox() { return this; }
 
         public virtual void ReadMessage(GameToControllerWindowMessage msg) { }
     }

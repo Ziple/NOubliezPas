@@ -24,7 +24,6 @@ namespace NOubliezPas
         Window myWin = null;
         VBox vBox = null;
 
-        Controller myCurrentController = null;
         FullscreeModeController myFullscreenModeController = null;
         SongTestController mySongTestController = null;
 
@@ -56,34 +55,12 @@ namespace NOubliezPas
                     myFullscreenModeController.ReadMessage(msg);
                 else if (msg == GameToControllerWindowMessage.GoneWindowed)
                     myFullscreenModeController.ReadMessage(msg);
-                else if( msg == GameToControllerWindowMessage.SongTestEnter)
-                    ActiveController = mySongTestController;
-                else if( msg == GameToControllerWindowMessage.SongTestExit )
-                    ActiveController = null;
+                else if (msg == GameToControllerWindowMessage.SongTestEnter)
+                    mySongTestController.ActivateController();
+                else if (msg == GameToControllerWindowMessage.SongTestExit)
+                    mySongTestController.DesactivateController();
                 else
-                    if( ActiveController != null )
-                        ActiveController.ReadMessage(msg);
-            }
-        }
-
-        public Controller ActiveController
-        {
-            get { return myCurrentController; }
-            set
-            {
-                if (myCurrentController != null)
-                {
-                    myCurrentController.Desactivate();
-                    vBox.Remove(myCurrentController.GetPaneBox());
-                }
-
-                if( value != null )
-                {
-                    value.Activate();
-                    vBox.Add(value.GetPaneBox());
-                    myWin.ShowAll();
-                }
-                myCurrentController = value;
+                    mySongTestController.ReadMessage(msg);
             }
         }
 
@@ -110,13 +87,15 @@ namespace NOubliezPas
             //vBox.Add(myFullscreenModeController.GetPaneBox());
 
             mySongTestController = new SongTestController(this);
-            ActiveController = mySongTestController;
-            vBox.Add(myCurrentController.GetPaneBox() );
+            vBox.Add(mySongTestController.GetPaneBox());
 
             // Rend tout visible
             myWin.ShowAll();
-            Application.Run();
 
+            // start the message pump
+            messagePumper.Start();
+
+            Application.Run();
         }
 
         /// <summary>
@@ -142,7 +121,6 @@ namespace NOubliezPas
         public void Run()
         {
             threadRunner.Start();
-            messagePumper.Start();
         }
 
         public void Join()

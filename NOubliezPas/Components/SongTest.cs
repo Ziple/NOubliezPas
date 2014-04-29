@@ -13,9 +13,9 @@ namespace NOubliezPas
 {
     class SongTest: Component
     {
-        GameApplication myApp = null;
-        Player myPlayer = null;
-        Song mySong;
+        protected GameApplication myApp = null;
+        protected Player myPlayer = null;
+        protected Song mySong;
 
         UIManager myUIManager;
         Label lyricsLabel;
@@ -25,7 +25,7 @@ namespace NOubliezPas
 
         bool waiting = true;
 
-
+        protected bool displaySubtitleIfNotHole = true;
         Subtitle prevSubtitle = null;
         bool sentWaitingForAnswerNotif = false;
         bool waitingForAnswer = false;
@@ -142,7 +142,7 @@ namespace NOubliezPas
             totTime.Start();
         }
 
-        void DoTransition()
+        protected virtual void DoTransition()
         {
             mySong.Music.Stop();
 
@@ -282,12 +282,15 @@ namespace NOubliezPas
             atEnd = (t >= (mySong.Music.Duration.TotalMilliseconds / 1000d));
             if (!atEnd)
             {
+                
+                
                 Subtitle sub = GetCurrentSubtitle();
 
                 if (sub != prevSubtitle)
                     OnSubtitleChanged();
 
                 prevSubtitle = sub;
+
                 if ( sub != null )
                 {
                     if (sub.ContainHole)
@@ -312,7 +315,9 @@ namespace NOubliezPas
 
                 if (lyricsLabel.Text == "")
                     frame.Visible = false;
-                else
+                else if (sub.ContainHole == false)
+                    frame.Visible = displaySubtitleIfNotHole;
+                else// contains hole
                     frame.Visible = true;
 
                 frame.CenterPosition = new Vector2f(0.5f * myApp.window.Size.X, 0.75f * myApp.window.Size.Y);
