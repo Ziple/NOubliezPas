@@ -49,18 +49,19 @@ namespace NOubliezPas
             {
                 GameToControllerWindowMessage msg = OurGameToControllerPipe.GetMessage();
 
+                ClientEventArgs args = new ClientEventArgs();
+                object[] rargs = new object[1];
+                rargs[0] = msg;
+                args.Args = rargs;
+
                 if (msg == GameToControllerWindowMessage.ApplicationQuit)
                     OnReceiveQuitMessage();
                 else if (msg == GameToControllerWindowMessage.GoneFullscreen)
-                    myFullscreenModeController.ReadMessage(msg);
+                    myFullscreenModeController.OnClientEvent(this, args);
                 else if (msg == GameToControllerWindowMessage.GoneWindowed)
-                    myFullscreenModeController.ReadMessage(msg);
-                else if (msg == GameToControllerWindowMessage.SongTestEnter)
-                    mySongTestController.ActivateController();
-                else if (msg == GameToControllerWindowMessage.SongTestExit)
-                    mySongTestController.DesactivateController();
+                    myFullscreenModeController.OnClientEvent(this, args);
                 else
-                    mySongTestController.ReadMessage(msg);
+                    mySongTestController.OnClientEvent(this, args);
             }
         }
 

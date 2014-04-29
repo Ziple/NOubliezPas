@@ -55,6 +55,11 @@ namespace NOubliezPas.Controllers
 
         public override void ReadMessage( GameToControllerWindowMessage msg )
         {
+            if (msg == GameToControllerWindowMessage.SongTestEnter)
+                    ActivateController();
+                if (msg == GameToControllerWindowMessage.SongTestExit)
+                    DesactivateController();
+
             if (msg == GameToControllerWindowMessage.ApplicationWaitingAnswer)
                 OnWaitingAnswer();
         }

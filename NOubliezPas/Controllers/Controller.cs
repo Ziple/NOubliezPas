@@ -17,6 +17,16 @@ namespace NOubliezPas.Controllers
         public Controller( GUILauncher launcher )
         {
             myGUILauncher = launcher;
+            ClientEvent += this.OnClientEvent;
+        }
+
+        public void OnClientEvent( object o, ClientEventArgs a )
+        {
+            foreach( object arg in a.Args )
+            {
+                GameToControllerWindowMessage msg = (GameToControllerWindowMessage)arg;
+                ReadMessage(msg);
+            }
         }
 
         public virtual void ActivateController()
