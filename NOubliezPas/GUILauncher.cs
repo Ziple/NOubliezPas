@@ -106,8 +106,8 @@ namespace NOubliezPas
             vBox = new VBox();
             myWin.Add(vBox);
 
-            myFullscreenModeController = new FullscreeModeController(this);
-            vBox.Add(myFullscreenModeController.GetPaneBox());
+            //myFullscreenModeController = new FullscreeModeController(this);
+            //vBox.Add(myFullscreenModeController.GetPaneBox());
 
             mySongTestController = new SongTestController(this);
             ActiveController = mySongTestController;

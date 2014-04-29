@@ -51,6 +51,9 @@ namespace NOubliezPas.Controllers
             // By default, nothing is sensitive
             answerEntry.Sensitive = false;
             analyzeBtn.Sensitive = false;
+
+            // show all widgets
+            vBox.ShowAll();
         }
 
         public override Box GetPaneBox()
@@ -146,7 +149,7 @@ namespace NOubliezPas.Controllers
                 analyzeBtn.Sensitive = false;
 
                 SongTest stComp = (SongTest)myGUILauncher.OurGameApp.ActiveComponent;
-                stComp.GetCurrentSubtitle().FillHoles(analyzedWords);
+                stComp.FillHoles(analyzedWords);
             }
         }
 
@@ -176,7 +179,7 @@ namespace NOubliezPas.Controllers
 
                     List<string> analyzedWords = GetWordsList();
                     SongTest stComp = (SongTest)myGUILauncher.OurGameApp.ActiveComponent;
-                    stComp.GetCurrentSubtitle().FillHoles(analyzedWords, validationList);
+                    stComp.FillHoles(analyzedWords, validationList);
                 }
             }
         }

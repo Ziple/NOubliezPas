@@ -25,9 +25,17 @@ namespace NOubliezPas
 
         bool waiting = true;
 
+
+        Subtitle prevSubtitle = null;
         bool sentWaitingForAnswerNotif = false;
         bool waitingForAnswer = false;
+
+        List<String> currentFillUps = null;
+        List<bool> currentValidationList = null;
+        int validatedHoleIndex = -1;
+
         int validated = -1;
+
         bool atEnd = false;
 
         Stopwatch totTime = new Stopwatch();
@@ -96,6 +104,19 @@ namespace NOubliezPas
                     if (args.Code == Keyboard.Key.Return
                         || args.Code == Keyboard.Key.Space )// validation de la réponse
                         ValidateAnswer();
+
+                    // validation de mots supplémentaires/en moins au clavier
+                    if ((args.Code == Keyboard.Key.V) || (args.Code == Keyboard.Key.B))
+                    {
+                        if (args.Code == Keyboard.Key.V)
+                            validatedHoleIndex++;
+                        else if (args.Code == Keyboard.Key.B)
+                            validatedHoleIndex--;
+
+                        currentValidationList = BuildValidationList(validatedHoleIndex);
+                        if (currentFillUps != null)
+                            FillHoles(currentFillUps, currentValidationList);
+                    }
 
                 }
             }
@@ -197,6 +218,60 @@ namespace NOubliezPas
 
             return null;
         }
+
+        public void FillHoles(List<String> holesFillUps, List<bool> validationList = null)
+        {
+            Subtitle sub = GetCurrentSubtitle();
+            if( sub != null && sub.ContainHole )
+            {
+                currentFillUps = holesFillUps;
+                sub.FillHoles(holesFillUps, validationList);
+
+                currentValidationList = validationList;
+                if( currentValidationList == null )
+                {
+                    currentValidationList = new List<bool>();
+                    for (int i = 0; i < sub.NumHoles; i++)
+                        currentValidationList.Add(false);
+                }
+
+                // recalculate the index of the last validated hole.
+                validatedHoleIndex = -1;
+                for (int i = 0; i < currentValidationList.Count; i++)
+                    if (currentValidationList[i])
+                        validatedHoleIndex = i;
+                    else
+                        break;
+            }
+        }
+
+        List<bool> BuildValidationList( int lastValidatedIndex )
+        {
+            List<bool> ret = null;
+            Subtitle sub = GetCurrentSubtitle();
+
+            if( sub != null )
+            {
+                ret = new List<bool>();
+
+                for (int i = 0; i < sub.NumHoles; i++)
+                    ret.Add( (i <= lastValidatedIndex) );
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Called when the subtitle change.
+        /// Invalidates the hole validation list and indexes
+        /// </summary>
+        void OnSubtitleChanged()
+        {
+            currentFillUps = null;
+            currentValidationList = null;
+            validatedHoleIndex = -1;
+        }
+
         public void Update(Stopwatch time)
         {
             myUIManager.Update(time);
@@ -209,6 +284,10 @@ namespace NOubliezPas
             {
                 Subtitle sub = GetCurrentSubtitle();
 
+                if (sub != prevSubtitle)
+                    OnSubtitleChanged();
+
+                prevSubtitle = sub;
                 if ( sub != null )
                 {
                     if (sub.ContainHole)
