@@ -14,6 +14,7 @@ namespace NOubliezPas
 {
     class SongSelectionMenu : Component
     {
+        ThemeSelectionMenuStyle myStyle;
         GameApplication myApp = null;
         Player myPlayer = null;
         Theme myTheme;
@@ -85,8 +86,10 @@ namespace NOubliezPas
 
         public void LoadContent()
         {
-            Texture[] labelTextures = myApp.guiStyle.labelTextures;
-            Texture[] scoreTextures = myApp.guiStyle.scoreTextures;
+            // récupération du style
+            myStyle = myApp.guiStyle.ThemeSelectionMenuStyle;
+
+            ImagePart[] labelTextures = myStyle.LabelsTextures;
 
             songsLabels = new List<Label>();
 
@@ -95,10 +98,10 @@ namespace NOubliezPas
             DCFont myFont = new DCFont(new Font("Content/verdana.ttf"));
 
             Frame scoreFrame = new Frame(myUIManager, null );
-            scoreFrame.BordersImages = scoreTextures;
+            scoreFrame.BordersImagesParts = labelTextures;
             scoreFrame.Visible = true;
 
-            Label scoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + " - " + myPlayer.Score );
+            Label scoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + "   " + myPlayer.Score );
             scoreLabel.Tint = Color.White;
             scoreLabel.Visible = true;
             scoreFrame.Position = new Vector2f(10f, 10f);
@@ -114,7 +117,7 @@ namespace NOubliezPas
                 vvLayout.Add(sp);
 
                 Frame songNameFrame = new Frame(myUIManager, vvLayout);
-                songNameFrame.BordersImages = labelTextures;
+                songNameFrame.BordersImagesParts = labelTextures;
                 songNameFrame.Visible = true;
 
                 Label songNamelabel = new Label(myUIManager, null, myFont, myTheme.GetSong(i).Name);

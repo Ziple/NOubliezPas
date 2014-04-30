@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using SFML.Window;
@@ -13,15 +14,24 @@ namespace NOubliezPas
 {
     class SongTest: Component
     {
+        [Flags]
+        enum State
+        {
+            Running = 0,
+            Waiting = 1,
+            WaitingForAnswer = Waiting | 2,
+            AtEnd = 4
+        }
+
         protected GameApplication myApp = null;
         protected Player myPlayer = null;
         protected Song mySong;
 
         UIManager myUIManager;
         Label lyricsLabel;
-        Frame frame;
+        Frame lyricsLabelFrame;
 
-        Label scoreLabel;
+        Label playerScoreLabel;
 
         bool waiting = true;
 
@@ -30,9 +40,60 @@ namespace NOubliezPas
         bool sentWaitingForAnswerNotif = false;
         bool waitingForAnswer = false;
 
-        List<String> currentFillUps = null;
-        List<bool> currentValidationList = null;
-        int validatedHoleIndex = -1;
+        List<String> myCurrentFillUps = null;
+        Mutex myCurrentFillUpsMutex = new Mutex();
+
+        public List<String> MyCurrentFillUps
+        {
+            get {
+                myCurrentFillUpsMutex.WaitOne();
+                List<String> val = myCurrentFillUps;
+                myCurrentFillUpsMutex.ReleaseMutex();
+                return val;
+            }
+            set
+            {
+                myCurrentFillUpsMutex.WaitOne();
+                myCurrentFillUps = value;
+                myCurrentFillUpsMutex.ReleaseMutex();
+            }
+        }
+
+        List<bool> myCurrentValidationList = null;
+        Mutex myCurrentValidationListMutex = new Mutex();
+
+        public List<bool> MyCurrentValidationList
+        {
+            get {
+                myCurrentValidationListMutex.WaitOne();
+                List<bool> ret =  myCurrentValidationList;
+                myCurrentValidationListMutex.ReleaseMutex();
+                return ret;
+            }
+            set {
+                myCurrentValidationListMutex.WaitOne();
+                myCurrentValidationList = value;
+                myCurrentValidationListMutex.ReleaseMutex();
+            }
+        }
+
+        int myValidatedHoleIndex = -1;
+        Mutex myValidatedHoleIndexMutex = new Mutex();
+
+        public int MyValidatedHoleIndex
+        {
+            get {
+                myValidatedHoleIndexMutex.WaitOne();
+                int ret = myValidatedHoleIndex;
+                myValidatedHoleIndexMutex.ReleaseMutex();
+                return ret;
+            }
+            set {
+                myValidatedHoleIndexMutex.WaitOne();
+                myValidatedHoleIndex = value;
+                myValidatedHoleIndexMutex.ReleaseMutex();
+            }
+        }
 
         int validated = -1;
 
@@ -74,7 +135,7 @@ namespace NOubliezPas
             if (args.Code == Keyboard.Key.Add)
             {
                 myPlayer.Score++;
-                scoreLabel.Text = myPlayer.Name + " - " + myPlayer.Score;
+                playerScoreLabel.Text = myPlayer.Name + " - " + myPlayer.Score;
             }
             else if (args.Code == Keyboard.Key.Subtract)
             {
@@ -82,7 +143,7 @@ namespace NOubliezPas
                 if (myPlayer.Score < 0)
                     myPlayer.Score = 0;
 
-                scoreLabel.Text = myPlayer.Name + " - " + myPlayer.Score;
+                playerScoreLabel.Text = myPlayer.Name + " - " + myPlayer.Score;
             }
 
             if ( !atEnd )
@@ -109,13 +170,12 @@ namespace NOubliezPas
                     if ((args.Code == Keyboard.Key.V) || (args.Code == Keyboard.Key.B))
                     {
                         if (args.Code == Keyboard.Key.V)
-                            validatedHoleIndex++;
+                            MyValidatedHoleIndex = MyValidatedHoleIndex+1;
                         else if (args.Code == Keyboard.Key.B)
-                            validatedHoleIndex--;
+                            MyValidatedHoleIndex = MyValidatedHoleIndex - 1;
 
-                        currentValidationList = BuildValidationList(validatedHoleIndex);
-                        if (currentFillUps != null)
-                            FillHoles(currentFillUps, currentValidationList);
+                        MyCurrentValidationList = BuildValidationList(MyValidatedHoleIndex);
+                        FillHoles(MyCurrentFillUps, MyCurrentValidationList);
                     }
 
                 }
@@ -180,31 +240,42 @@ namespace NOubliezPas
         {
             mySong.DoLoad();
 
-            Texture[] textures = myApp.guiStyle.labelTextures;
+            ThemeSelectionMenuStyle myStyle = myApp.guiStyle.ThemeSelectionMenuStyle;
+            ImagePart[] textures = myStyle.LabelsTextures;
 
             myUIManager = new UIManager(myApp.window);
 
             DCFont myFont = new DCFont(new Font("Content/verdana.ttf"));
 
-            Frame f = new Frame(myUIManager, null);
-            f.BordersImages = textures;
-            f.Visible = true;
+            Frame playerScoreLabelFrame = new Frame(myUIManager, null);
+            playerScoreLabelFrame.BordersImagesParts = textures;
+            playerScoreLabelFrame.Visible = true;
 
-            scoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + " - " + myPlayer.Score);
-            scoreLabel.Tint = Color.White;
-            scoreLabel.Visible = true;
-            f.Position = new Vector2f(10f, 10f);
-            f.ContainedWidget = scoreLabel;
+            playerScoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + "   " + myPlayer.Score);
+            playerScoreLabel.Tint = Color.White;
+            playerScoreLabel.Visible = true;
+            playerScoreLabelFrame.Position = new Vector2f(10f, 10f);
+            playerScoreLabelFrame.ContainedWidget = playerScoreLabel;
 
-            frame = new Frame(myUIManager, null);
-            frame.BordersImages = textures;
-            frame.Visible = true;
+            Frame songNameFrame = new Frame(myUIManager, null);
+            songNameFrame.BordersImagesParts = textures;
+            songNameFrame.Visible = true;
+
+            Label songNameLabel = new Label(myUIManager, null, myFont, mySong.Name);
+            songNameLabel.Tint = Color.White;
+            songNameLabel.Visible = true;
+            songNameFrame.Position = new Vector2f(0.5f * (myUIManager.ScreenSize.X - songNameFrame.Size.X), (1f/8f) * myUIManager.ScreenSize.X - 0.5f* songNameFrame.Size.Y );
+            songNameFrame.ContainedWidget = songNameLabel;
+
+            lyricsLabelFrame = new Frame(myUIManager, null);
+            lyricsLabelFrame.BordersImagesParts = textures;
+            lyricsLabelFrame.Visible = true;
 
             lyricsLabel = new Label(myUIManager, null, myFont, "");
             lyricsLabel.Tint = Color.White;
             lyricsLabel.Visible = true;
-            frame.ContainedWidget = lyricsLabel;
-            frame.CenterPosition = new Vector2f(0.5f * (float)myApp.window.Size.X, 0.75f * (float)myApp.window.Size.Y);
+            lyricsLabelFrame.ContainedWidget = lyricsLabel;
+            lyricsLabelFrame.CenterPosition = new Vector2f(0.5f * (float)myApp.window.Size.X, 0.75f * (float)myApp.window.Size.Y);
         }
 
         public Subtitle GetCurrentSubtitle()
@@ -219,30 +290,39 @@ namespace NOubliezPas
             return null;
         }
 
+        Mutex myFillHolesMutex = new Mutex();
+
         public void FillHoles(List<String> holesFillUps, List<bool> validationList = null)
         {
-            Subtitle sub = GetCurrentSubtitle();
-            if( sub != null && sub.ContainHole )
+            myFillHolesMutex.WaitOne();
+            if (holesFillUps != null)
             {
-                currentFillUps = holesFillUps;
-                sub.FillHoles(holesFillUps, validationList);
-
-                currentValidationList = validationList;
-                if( currentValidationList == null )
+                Subtitle sub = GetCurrentSubtitle();
+                if (sub != null && sub.ContainHole)
                 {
-                    currentValidationList = new List<bool>();
-                    for (int i = 0; i < sub.NumHoles; i++)
-                        currentValidationList.Add(false);
-                }
+                    MyCurrentFillUps = holesFillUps;
+                    sub.FillHoles(holesFillUps, validationList);
 
-                // recalculate the index of the last validated hole.
-                validatedHoleIndex = -1;
-                for (int i = 0; i < currentValidationList.Count; i++)
-                    if (currentValidationList[i])
-                        validatedHoleIndex = i;
-                    else
-                        break;
+                    if (validationList == null)
+                    {
+                        validationList = new List<bool>();
+                        for (int i = 0; i < sub.NumHoles; i++)
+                            validationList.Add(false);
+                    }
+
+                    // recalculate the index of the last validated hole.
+                    int validatedHoleIndex = -1;
+                    for (int i = 0; i < validationList.Count; i++)
+                        if (validationList[i])
+                            validatedHoleIndex = i;
+                        else
+                            break;
+
+                    MyValidatedHoleIndex = validatedHoleIndex;
+                    MyCurrentValidationList = validationList;
+                }
             }
+            myFillHolesMutex.ReleaseMutex();
         }
 
         List<bool> BuildValidationList( int lastValidatedIndex )
@@ -267,9 +347,9 @@ namespace NOubliezPas
         /// </summary>
         void OnSubtitleChanged()
         {
-            currentFillUps = null;
-            currentValidationList = null;
-            validatedHoleIndex = -1;
+            myCurrentFillUps = null;
+            myCurrentValidationList = null;
+            myValidatedHoleIndex = -1;
         }
 
         public void Update(Stopwatch time)
@@ -282,8 +362,6 @@ namespace NOubliezPas
             atEnd = (t >= (mySong.Music.Duration.TotalMilliseconds / 1000d));
             if (!atEnd)
             {
-                
-                
                 Subtitle sub = GetCurrentSubtitle();
 
                 if (sub != prevSubtitle)
@@ -314,17 +392,17 @@ namespace NOubliezPas
                     lyricsLabel.Text = "";
 
                 if (lyricsLabel.Text == "")
-                    frame.Visible = false;
+                    lyricsLabelFrame.Visible = false;
                 else if (sub.ContainHole == false)
-                    frame.Visible = displaySubtitleIfNotHole;
+                    lyricsLabelFrame.Visible = displaySubtitleIfNotHole;
                 else// contains hole
-                    frame.Visible = true;
+                    lyricsLabelFrame.Visible = true;
 
-                frame.CenterPosition = new Vector2f(0.5f * myApp.window.Size.X, 0.75f * myApp.window.Size.Y);
+                lyricsLabelFrame.CenterPosition = new Vector2f(0.5f * myApp.window.Size.X, 0.75f * myApp.window.Size.Y);
             }
             else
             {
-                frame.Visible = false;
+                lyricsLabelFrame.Visible = false;
                 waiting = true;
             }
 

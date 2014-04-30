@@ -82,18 +82,8 @@ namespace NOubliezPas
         public Color BackgroundColor;
         public ImagePart BackgroundImage;
         public TextureDisplayMode BackgroundDisplayMode;
-        public ImagePart[] FirstLabelsTextures;
-        public ImagePart[] FirstHoveredLabelsTextures;
-        public ImagePart[] FirstScoresTextures;
-        public ImagePart[] FirstHoveredScoresTextures;
         public ImagePart[] LabelsTextures;
         public ImagePart[] HoveredLabelsTextures;
-        public ImagePart[] ScoresTextures;
-        public ImagePart[] HoveredScoresTextures;
-        public ImagePart[] LastLabelsTextures;
-        public ImagePart[] LastHoveredLabelsTextures;
-        public ImagePart[] LastScoresTextures;
-        public ImagePart[] LastHoveredScoresTextures;
         public ImagePart[] PlayersNamesTextures;
         public ImagePart[] PlayersPicsTextures;
         public float ThemesLabelsBottomSpace;
@@ -111,18 +101,8 @@ namespace NOubliezPas
             Color backgroundColor,
             ImagePart backgroundImage,
             TextureDisplayMode backgroundDisplayMode,
-            ImagePart[] firstLabelsTextures,
-            ImagePart[] firstHoveredLabelsTextures,
-            ImagePart[] firstScoresTextures,
-            ImagePart[] firstHoveredScoresTextures,
             ImagePart[] labelsTextures,
             ImagePart[] hoveredLabelsTextures,
-            ImagePart[] scoresTextures,
-            ImagePart[] hoveredScoresTextures,
-            ImagePart[] lastLabelsTextures,
-            ImagePart[] lastHoveredLabelsTextures,
-            ImagePart[] lastScoresTextures,
-            ImagePart[] lastHoveredScoresTextures,
             ImagePart[] playersNamesTextures,
             ImagePart[] playersPicsTextures,
             float themesLabelsBottomSpace,
@@ -140,23 +120,8 @@ namespace NOubliezPas
             BackgroundImage = backgroundImage;
             BackgroundDisplayMode = backgroundDisplayMode;
 
-            FirstLabelsTextures = firstLabelsTextures;
-            FirstHoveredLabelsTextures = firstHoveredLabelsTextures;
-
-            FirstScoresTextures = firstScoresTextures;
-            FirstHoveredScoresTextures = firstHoveredScoresTextures;
-
             LabelsTextures = labelsTextures;
             HoveredLabelsTextures = hoveredLabelsTextures;
-
-            ScoresTextures = scoresTextures;
-            HoveredScoresTextures = hoveredScoresTextures;
-
-            LastLabelsTextures = lastLabelsTextures;
-            LastHoveredLabelsTextures = lastHoveredLabelsTextures;
-
-            LastScoresTextures = lastScoresTextures;
-            LastHoveredScoresTextures = lastHoveredScoresTextures;
 
             PlayersNamesTextures = playersNamesTextures;
             PlayersPicsTextures = playersPicsTextures;
@@ -180,18 +145,8 @@ namespace NOubliezPas
             ImagePart backgroundImage = null;
             TextureDisplayMode backgroundDisplayMode = TextureDisplayMode.Stretch;
 
-            ImagePart[] firstLabelsTextures = null;
-            ImagePart[] firstHoveredLabelsTextures = null;
-            ImagePart[] firstScoresTextures = null;
-            ImagePart[] firstHoveredScoresTextures = null;
             ImagePart[] labelsTextures = null;
             ImagePart[] hoveredLabelsTextures = null;
-            ImagePart[] scoresTextures = null;
-            ImagePart[] hoveredScoresTextures = null;
-            ImagePart[] lastLabelsTextures = null;
-            ImagePart[] lastHoveredLabelsTextures = null;
-            ImagePart[] lastScoresTextures = null;
-            ImagePart[] lastHoveredScoresTextures = null;
 
 
             ImagePart[] playersNamesTextures = null;
@@ -229,30 +184,10 @@ namespace NOubliezPas
                                         backgroundDisplayMode = TextureDisplayMode.Stretch;
                                 }
                             }
-                            else if (reader.Name == "firstLabelsTextures")
-                                firstLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "firstHoveredLabelsTextures")
-                                firstHoveredLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "firstScoresTextures")
-                                firstScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "firstHoveredScoresTextures")
-                                firstHoveredScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "labelsTextures")
                                 labelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "hoveredLabelsTextures")
                                 hoveredLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "scoresTextures")
-                                scoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "hoveredScoresTextures")
-                                hoveredScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "lastLabelsTextures")
-                                lastLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "lastHoveredLabelsTextures")
-                                lastHoveredLabelsTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "lastScoresTextures")
-                                lastScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
-                            else if (reader.Name == "lastHoveredScoresTextures")
-                                lastHoveredScoresTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "playersNamesTextures")
                                 playersNamesTextures = FrameTexturesLoader.Load(reader.ReadSubtree());
                             else if (reader.Name == "playersPicsTextures")
@@ -314,18 +249,8 @@ namespace NOubliezPas
                 backgroundColor,
                 backgroundImage,
                 backgroundDisplayMode,
-                firstLabelsTextures,
-                firstHoveredLabelsTextures,
-                firstScoresTextures,
-                firstHoveredScoresTextures,
                 labelsTextures, 
                 hoveredLabelsTextures,
-                scoresTextures,
-                hoveredScoresTextures,
-                lastLabelsTextures,
-                lastHoveredLabelsTextures,
-                lastScoresTextures,
-                lastHoveredScoresTextures,
                 playersNamesTextures,
                 playersPicsTextures,
                 themesLabelsBottomSpace,

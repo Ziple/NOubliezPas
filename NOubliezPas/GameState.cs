@@ -24,6 +24,22 @@ namespace NOubliezPas
 
         List<KeyValuePair<String, Color>> mySliceCache = null;
 
+        Mutex mySliceCacheMutex = new Mutex();
+        public List<KeyValuePair<String, Color>> MySliceCache
+        {
+            get {
+                mySliceCacheMutex.WaitOne();
+                List<KeyValuePair<String, Color>> ret =  mySliceCache;
+                mySliceCacheMutex.ReleaseMutex();
+                return ret;
+            }
+            set {
+                mySliceCacheMutex.WaitOne();
+                mySliceCache = value;
+                mySliceCacheMutex.ReleaseMutex();
+            }
+        }
+
         public Subtitle(float startTime, float endTime, String text)
         {
             myStartTime = startTime;
@@ -55,12 +71,12 @@ namespace NOubliezPas
             foreach (String s in slices)
                 ret.Add(new KeyValuePair<string, Color>(s, Color.White));
 
-            mySliceCache = ret;
+            MySliceCache = ret;
         }
 
         public List<KeyValuePair<String, Color>> GetDisplayedSlices()
         {
-            return mySliceCache;
+            return MySliceCache;
         }
 
         public bool ContainHole
@@ -151,11 +167,14 @@ namespace NOubliezPas
             return true;
         }
 
+        Mutex myFillHolesMutex = new Mutex();
         public void FillHoles( List<String> holesFillUps, List<bool> validationList = null )
         {
+            myFillHolesMutex.WaitOne();
+
             if (holesFillUps.Count == NumHoles)
             {
-                mySliceCache.Clear();
+                List<KeyValuePair<String, Color>> sliceCache = new List<KeyValuePair<string,Color>>();
 
                 if (validationList == null)
                 {
@@ -184,19 +203,22 @@ namespace NOubliezPas
                             c = Color.Blue;
 
                         replacedSlices.Add(s);
-                        mySliceCache.Add(new KeyValuePair<string, Color>(s, c));
+                        sliceCache.Add(new KeyValuePair<string, Color>(s, c));
                         replacerIndex++;
                     }
                     else// not a hole
                     {
                         replacerText += textSlices[i];
                         replacedSlices.Add(textSlices[i]);
-                        mySliceCache.Add(new KeyValuePair<string, Color>(textSlices[i], Color.White));
+                        sliceCache.Add(new KeyValuePair<string, Color>(textSlices[i], Color.White));
                     }
                 }
 
                 myDisplayedText = replacerText;
+                MySliceCache = sliceCache;
             }
+
+            myFillHolesMutex.ReleaseMutex();
         }
 
         public String CompleteText

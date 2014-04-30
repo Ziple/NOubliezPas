@@ -81,6 +81,7 @@ namespace NOubliezPas
 
         void FitFrames()
         {
+            // à changer
             // On met toutes les frames à la même taille
             {
                 Vector2f fLMax = new Vector2f(0f, 0f);
@@ -93,13 +94,9 @@ namespace NOubliezPas
                         HorizontalLayout vLayout = (HorizontalLayout)entry;
 
                         Frame fL = (Frame)vLayout.Widgets[0];
-                        Frame fS = (Frame)vLayout.Widgets[1];
 
                         fLMax.X = fLMax.X < fL.Size.X ? fL.Size.X : fLMax.X;
                         fLMax.Y = fLMax.Y < fL.Size.Y ? fL.Size.Y : fLMax.Y;
-
-                        fSMax.X = fSMax.X < fS.Size.X ? fS.Size.X : fSMax.X;
-                        fLMax.Y = fLMax.Y < fS.Size.Y ? fS.Size.Y : fLMax.Y;
                     }
                 }
 
@@ -110,16 +107,13 @@ namespace NOubliezPas
                         HorizontalLayout vLayout = (HorizontalLayout)entry;
 
                         Frame fL = (Frame)vLayout.Widgets[0];
-                        Frame fS = (Frame)vLayout.Widgets[1];
 
                         fL.Resize(fLMax);
                         fL.ContainedWidget.Expand();
-                        fS.Resize(new Vector2f(fSMax.X, fLMax.Y));
-                        fS.ContainedWidget.Expand();
                     }
                 }
             }
-            // On met toutes les frames à la même taille
+            // On met toutes les frames des joueurs à la même taille
             // les photos sont carrées
             {
                 float fLMax = 0f;
@@ -175,49 +169,16 @@ namespace NOubliezPas
                 Frame themeNameFrame = (Frame)themeHLayout.Widgets[0];
                 Label themeNameLabel = (Label)themeNameFrame.ContainedWidget;
 
-                Frame scoreFrame = (Frame)themeHLayout.Widgets[1];
-                Label scoreLabel = (Label)scoreFrame.ContainedWidget;
-
-                if( i == 0 )
-                    themeNameFrame.BordersImagesParts = myStyle.FirstLabelsTextures;
-                else if( i == themes.Count-1 )
-                    themeNameFrame.BordersImagesParts = myStyle.LastLabelsTextures;
-                else
-                    themeNameFrame.BordersImagesParts = myStyle.LabelsTextures;
+                themeNameFrame.BordersImagesParts = myStyle.LabelsTextures;
                 themeNameLabel.TextColor = myStyle.FontNormalColor;
-
-                if( i == 0 )
-                    scoreFrame.BordersImagesParts = myStyle.FirstScoresTextures;
-                else if( i == themes.Count - 1 )
-                    scoreFrame.BordersImagesParts = myStyle.LastScoresTextures;
-                else
-                    scoreFrame.BordersImagesParts = myStyle.ScoresTextures;
-                scoreLabel.TextColor = myStyle.FontNormalColor;
             }
 
             HorizontalLayout themeLayout = themes[currentChoice];
             Frame cthemeNameFrame = (Frame)themeLayout.Widgets[0];
             Label cthemeNameLabel = (Label)cthemeNameFrame.ContainedWidget;
 
-            Frame cscoreFrame = (Frame)themeLayout.Widgets[1];
-            Label cscoreLabel = (Label)cscoreFrame.ContainedWidget;
-
-            if( currentChoice == 0 )
-                cthemeNameFrame.BordersImagesParts = myStyle.FirstHoveredLabelsTextures;
-            else if( currentChoice == themes.Count-1 )
-                cthemeNameFrame.BordersImagesParts = myStyle.LastHoveredLabelsTextures;
-            else
-                cthemeNameFrame.BordersImagesParts = myStyle.HoveredLabelsTextures;
-
+            cthemeNameFrame.BordersImagesParts = myStyle.HoveredLabelsTextures;
             cthemeNameLabel.TextColor = myStyle.FontHoveredColor;
-
-            if (currentChoice == 0)
-                cscoreFrame.BordersImagesParts = myStyle.FirstHoveredScoresTextures;
-            else if (currentChoice == themes.Count - 1)
-                cscoreFrame.BordersImagesParts = myStyle.LastHoveredScoresTextures;
-            else
-                cscoreFrame.BordersImagesParts = myStyle.HoveredScoresTextures;
-            cscoreLabel.TextColor = myStyle.FontHoveredColor;
 
             FitFrames();
         }
@@ -265,7 +226,6 @@ namespace NOubliezPas
                 throw new Exception("Pas de joueur?");
 
             ImagePart[] labelTextures = myStyle.LabelsTextures;
-            ImagePart[] scoreTextures = myStyle.ScoresTextures;
             ImagePart[] playersNamesTextures = myStyle.PlayersNamesTextures;
             ImagePart[] playersPicsTextures = myStyle.PlayersPicsTextures;
             float themesLabelsBottomSpace = myStyle.ThemesLabelsBottomSpace;
@@ -302,40 +262,15 @@ namespace NOubliezPas
                     // Frame contenant le nom du thème
                     {
                         Frame themeFrame = new Frame(myUIManager, themeHLayout);
-                        if (i == 0)
-                            themeFrame.BordersImagesParts = myStyle.FirstLabelsTextures;
-                        else if (i == myGame.NumThemes - 1)
-                            themeFrame.BordersImagesParts = myStyle.LastLabelsTextures;
-                        else
-                            themeFrame.BordersImagesParts = myStyle.LabelsTextures;
+                        themeFrame.BordersImagesParts = myStyle.LabelsTextures;
 
                         themeFrame.Visible = true;
                         themeHLayout.Add(themeFrame);
 
-                        Label themesNamelabel = new Label(myUIManager, themeFrame, myFont, myGame.GetTheme(i).Name, fontSize);
+                        Label themesNamelabel = new Label(myUIManager, themeFrame, myFont, myGame.GetTheme(i).Name + "   " + myGame.GetTheme(i).Points.ToString(), fontSize);
                         themesNamelabel.Tint = Color.White;
                         themesNamelabel.Visible = true;
                         themeFrame.ContainedWidget = themesNamelabel;
-                    }
-
-                    // Frame contenant le nombre de points du thème
-                    {
-                        Frame ptsFrame = new Frame(myUIManager, themeHLayout);
-
-                        if (i == 0)
-                            ptsFrame.BordersImagesParts = myStyle.FirstScoresTextures;
-                        else if (i == myGame.NumThemes - 1)
-                            ptsFrame.BordersImagesParts = myStyle.LastScoresTextures;
-                        else
-                            ptsFrame.BordersImagesParts = myStyle.ScoresTextures;
-
-                        ptsFrame.Visible = true;
-                        themeHLayout.Add(ptsFrame);
-
-                        Label ptslabel = new Label(myUIManager, ptsFrame, myFont, myGame.GetTheme(i).Points.ToString(), fontSize );
-                        ptslabel.Tint = Color.White;
-                        ptslabel.Visible = true;
-                        ptsFrame.ContainedWidget = ptslabel;
                     }
 
                     if (i < myGame.NumThemes - 1)
@@ -401,7 +336,7 @@ namespace NOubliezPas
 
                         string str = player.Name;
                         if (displayScores)
-                            str += " - " + player.Score.ToString();
+                            str += "   " + player.Score.ToString();
 
                         Label scoreLabel = new Label(myUIManager, playerNameFrame, myFont, str, fontSize);
 
