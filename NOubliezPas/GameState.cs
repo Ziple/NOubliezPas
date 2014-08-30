@@ -124,6 +124,7 @@ namespace NOubliezPas
 
             return ret;
         }
+
         public List<KeyValuePair<int,int>> GetHolesList()
         {
             List<KeyValuePair<int, int>> ret = new List<KeyValuePair<int, int>>();
@@ -153,20 +154,80 @@ namespace NOubliezPas
             }
         }
 
-        bool AnswerCanBeCorrect( String replacerText)
+        bool AnswerCanBeCorrect( List<String> fillUps, int holeIndex )
         {
-            replacerText = replacerText.ToLower();
             String wholeText = myWholeText.ToLower();
 
-            for (int j = 0; j < replacerText.Length; j++ )
-            {
-                if( replacerText[j] != wholeText[j] )
-                    return false;
-            }
+            List<String> textSlices = GetTextSlices();
+            List<KeyValuePair<int, int>> holesList = GetHolesList();
 
-            return true;
+            if (holesList.Count == fillUps.Count)
+            {
+                bool lastHole = (holeIndex == holesList.Count - 1);
+                if( lastHole )
+                    return (wholeText == GetFilledUpString(fillUps).ToLower());
+                else
+                {
+                    int dl = 0;
+                    String replacedString = myTextWithAllHoles.ToLower();
+                    for (int i = 0; i <= holeIndex; i++)
+                    {
+                        KeyValuePair<int, int> hole = holesList[i];
+                        int holeLength = hole.Value - hole.Key + 1;
+                        int replacementLength = fillUps[i].Length;
+
+                        replacedString = replacedString.Remove(hole.Key + dl, holeLength);
+                        replacedString = replacedString.Insert(hole.Key + dl, fillUps[i].ToLower());
+
+                        dl += replacementLength - holeLength;
+
+                        for( int j = 0; j < replacedString.Length; j++ )
+                        {
+                            if (replacedString[j] == '_')
+                                break;
+
+                            if (replacedString[j] != wholeText[j])
+                                return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+            return false;
         }
 
+        public String GetFilledUpString(List<String> holesFillUps)
+        {
+            if (holesFillUps.Count == NumHoles)
+            {
+                List<String> textSlices = GetTextSlices();
+                List<String> replacedSlices = new List<String>();
+
+                String replacerText = "";
+                int replacerIndex = 0;
+                for (int i = 0; i < textSlices.Count; i++)
+                {
+                    if (textSlices[i].Contains('_'))//a hole
+                    {
+                        String s = holesFillUps[replacerIndex];
+                        replacerText += s;
+
+                        replacedSlices.Add(s);
+                        replacerIndex++;
+                    }
+                    else// not a hole
+                    {
+                        replacerText += textSlices[i];
+                        replacedSlices.Add(textSlices[i]);
+                    }
+                }
+
+                return replacerText;
+            }
+
+            return null;
+        }
         Mutex myFillHolesMutex = new Mutex();
         public void FillHoles( List<String> holesFillUps, List<bool> validationList = null )
         {
@@ -197,8 +258,8 @@ namespace NOubliezPas
 
                         Color c = Color.White;
 
-                        if (validationList[replacerIndex])// Choose the right color
-                            c = AnswerCanBeCorrect(replacerText) ? Color.Green : Color.Red;
+                        if (validationList[replacerIndex])// Choose the right color, it's replacing a hole
+                            c = AnswerCanBeCorrect(holesFillUps, replacerIndex) ? Color.Green : Color.Red;
                         else
                             c = Color.Blue;
 
@@ -597,7 +658,26 @@ namespace NOubliezPas
     {
         public String Name = "";
         public String PhotoSrc = null;
-        public int Score = 0;
+
+
+        private int myScore = 0;
+        Mutex myScoreMutex = new Mutex();
+
+        public int Score
+        {
+            get {
+                myScoreMutex.WaitOne();
+                int ret = myScore;
+                myScoreMutex.ReleaseMutex();
+                return ret;
+            }
+            set {
+                myScoreMutex.WaitOne();
+                myScore = value;
+                myScoreMutex.ReleaseMutex();
+            }
+        }
+
         public List<Theme> ChosenThemes = new List<Theme>();
         public bool DidBlindTest = false;
 

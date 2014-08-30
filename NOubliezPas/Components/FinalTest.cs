@@ -12,6 +12,7 @@ using NOubliezPas.Communication;
 
 namespace NOubliezPas
 {
+    /*
     class FinalTest : Component
     {
         GameApplication myApp = null;
@@ -64,7 +65,7 @@ namespace NOubliezPas
             if (args.Code == Keyboard.Key.Add)
             {
                 myPlayer.Score++;
-                scoreLabel.Text = myPlayer.Name + " - " + myPlayer.Score;
+                scoreLabel.Text = myPlayer.Name + "   " + myPlayer.Score;
             }
             else if (args.Code == Keyboard.Key.Subtract)
             {
@@ -72,7 +73,7 @@ namespace NOubliezPas
                 if (myPlayer.Score < 0)
                     myPlayer.Score = 0;
 
-                scoreLabel.Text = myPlayer.Name + " - " + myPlayer.Score;
+                scoreLabel.Text = myPlayer.Name + "   " + myPlayer.Score;
             }
 
             if (!atEnd)
@@ -112,7 +113,6 @@ namespace NOubliezPas
             mySong.DoLoad();
 
             Texture[] labelTextures = myApp.guiStyle.labelTextures;
-            Texture[] scoreTextures = myApp.guiStyle.scoreTextures;
 
             myUIManager = new UIManager(myApp.window);
 
@@ -129,10 +129,10 @@ namespace NOubliezPas
             songNameFrame.ContainedWidget = songNameLabel;
 
             Frame scoreFrame = new Frame(myUIManager, null);
-            scoreFrame.BordersImages = scoreTextures;
+            scoreFrame.BordersImages = labelTextures;
             scoreFrame.Visible = true;
 
-            scoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + " - " + myPlayer.Score);
+            scoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + "   " + myPlayer.Score);
             scoreLabel.Tint = Color.White;
             scoreLabel.Visible = true;
             scoreFrame.Position = new Vector2f(10f, 10f);
@@ -156,4 +156,5 @@ namespace NOubliezPas
             myUIManager.Render();
         }
     }
+     * */
 }

@@ -17,7 +17,7 @@ namespace NOubliezPas
         public BlindTest(GameApplication app, Player player, Song song):
             base(app, player, song)
         {
-            displaySubtitleIfNotHole = false;
+            player.DidBlindTest = true;
         }
 
         protected override void DoTransition()
@@ -44,7 +44,7 @@ namespace NOubliezPas
                     if (myApp.game.Players[i].Score >= bpl.Score)
                         bpl = myApp.game.Players[i];
 
-                myApp.ChangeComponent(new BlindTest(myApp, bpl, myApp.game.FinalSong));
+                myApp.ChangeComponent(new SongTest(myApp, bpl, myApp.game.FinalSong));
             }
         }
     }

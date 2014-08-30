@@ -20,7 +20,7 @@ namespace NOubliezPas
         Thread messagePumper;
 
         public RenderWindow window;
-        Styles windowStyle = Styles.Default;
+        Styles windowStyle = Styles.None;
 
         Mutex recreateWindowMutex = new Mutex();
         bool recreateWindow = false;
@@ -32,6 +32,11 @@ namespace NOubliezPas
         public Component newComponent = null;
 
         public GameState game = null;
+
+        public GameState GameState
+        {
+            get { return game; }
+        }
 
         Mutex runMutex = new Mutex();
         bool run = true;
@@ -144,7 +149,7 @@ namespace NOubliezPas
             recreateWindowMutex.WaitOne();
             if (windowStyle == Styles.Fullscreen)
             {
-                windowStyle = Styles.Default;
+                windowStyle = Styles.None;
                 recreateWindow = true;
 
                 OurGameToControllerPipe.SendMessage(GameToControllerWindowMessage.GoneWindowed);

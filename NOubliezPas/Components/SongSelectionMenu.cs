@@ -22,7 +22,10 @@ namespace NOubliezPas
         UIManager myUIManager;
 
         int currentChoice = 0;
-        List<Label> songsLabels;
+        List<Frame> songNameFrames = new List<Frame>();
+        List<Label> songNameLabels = new List<Label>();
+
+        Label myPlayerScoreLabel;
 
         public SongSelectionMenu(GameApplication app, Player player, Theme theme)
         {
@@ -50,7 +53,7 @@ namespace NOubliezPas
         {
             KeyEventArgs args = (KeyEventArgs)e;
 
-            if (songsLabels.Count > 0)
+            if (songNameLabels.Count > 0)
             {
                 // validation du choix de la chanson
                 if (args.Code == Keyboard.Key.Return)
@@ -64,20 +67,29 @@ namespace NOubliezPas
                 else if (args.Code == Keyboard.Key.Up)
                     currentChoice--;
 
-                if (currentChoice >= songsLabels.Count)
-                    currentChoice = songsLabels.Count - 1;
+                if (currentChoice >= songNameLabels.Count)
+                    currentChoice = songNameLabels.Count - 1;
                 if (currentChoice < 0)
                     currentChoice = 0;
 
-                if (currentChoice != oldChoice)
-                {
-                    songsLabels[oldChoice].TextColor = Color.White;
-                    songsLabels[oldChoice].Text = myTheme.GetSong(oldChoice).Name;
-
-                    songsLabels[currentChoice].Text = "<b>" + myTheme.GetSong(currentChoice).Name + "</b>";
-                    songsLabels[currentChoice].TextColor = Color.Black;
-                }
+                ChangeChoice();
             }
+        }
+
+        void ChangeChoice()
+        {
+            for (int i = 0; i < songNameLabels.Count; i++ )
+            {
+                songNameFrames[i].BordersImagesParts = myStyle.LabelsTextures;
+
+                songNameLabels[i].TextColor = myStyle.FontNormalColor;
+                songNameLabels[i].Text = myTheme.GetSong(i).Name;
+            }
+
+            songNameFrames[currentChoice].BordersImagesParts = myStyle.HoveredLabelsTextures;
+
+            songNameLabels[currentChoice].Text = myTheme.GetSong(currentChoice).Name;
+            songNameLabels[currentChoice].TextColor = myStyle.FontHoveredColor;
         }
 
         public void Initialize()
@@ -91,8 +103,6 @@ namespace NOubliezPas
 
             ImagePart[] labelTextures = myStyle.LabelsTextures;
 
-            songsLabels = new List<Label>();
-
             myUIManager = new UIManager(myApp.window);
 
             DCFont myFont = new DCFont(new Font("Content/verdana.ttf"));
@@ -101,11 +111,11 @@ namespace NOubliezPas
             scoreFrame.BordersImagesParts = labelTextures;
             scoreFrame.Visible = true;
 
-            Label scoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + "   " + myPlayer.Score );
-            scoreLabel.Tint = Color.White;
-            scoreLabel.Visible = true;
-            scoreFrame.Position = new Vector2f(10f, 10f);
-            scoreFrame.ContainedWidget = scoreLabel;
+            myPlayerScoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + "   " + myPlayer.Score );
+            myPlayerScoreLabel.Tint = myStyle.FontNormalColor;
+            myPlayerScoreLabel.Visible = true;
+            scoreFrame.Position = new Vector2f(50f, 20f);
+            scoreFrame.ContainedWidget = myPlayerScoreLabel;
 
             VerticalLayout vvLayout = new VerticalLayout(myUIManager, null);
             vvLayout.Visible = true;
@@ -119,11 +129,12 @@ namespace NOubliezPas
                 Frame songNameFrame = new Frame(myUIManager, vvLayout);
                 songNameFrame.BordersImagesParts = labelTextures;
                 songNameFrame.Visible = true;
+                songNameFrames.Add( songNameFrame );
 
                 Label songNamelabel = new Label(myUIManager, null, myFont, myTheme.GetSong(i).Name);
-                songNamelabel.Tint = Color.White;
+                songNamelabel.Tint = myStyle.FontNormalColor;
                 songNamelabel.Visible = true;
-                songsLabels.Add(songNamelabel);
+                songNameLabels.Add(songNamelabel);
 
                 songNameFrame.ContainedWidget = songNamelabel;
                 vvLayout.Add(songNameFrame);
@@ -131,17 +142,43 @@ namespace NOubliezPas
 
             vvLayout.CenterPosition = new Vector2f(myApp.window.Size.X, myApp.window.Size.Y) / 2f;
 
-            songsLabels[0].TextColor = Color.Black;
-            songsLabels[0].Text = "<b>" + myTheme.GetSong(0).Name + "</b>";
+            ChangeChoice();
         }
 
         public void Update(Stopwatch time)
         {
+            if (myPlayer.Score > 0)
+                myPlayerScoreLabel.Text = myPlayer.Name + " " + myPlayer.Score;
+            else
+                myPlayerScoreLabel.Text = myPlayer.Name;
+
             myUIManager.Update(time);
         }
 
         public void Draw(Stopwatch time)
         {
+            myApp.window.Clear(myStyle.BackgroundColor);
+
+            if (myStyle.BackgroundImage != null)
+            {
+                ImagePart part = myStyle.BackgroundImage;
+                myUIManager.Painter.Begin();
+                if (myStyle.BackgroundDisplayMode == TextureDisplayMode.Stretch)
+                    myUIManager.Painter.DrawImage(part.SourceTexture, new FloatRect(0f, 0f, myUIManager.ScreenSize.X, myUIManager.ScreenSize.Y), part.SourceRectangle);
+                else
+                {
+                    // the image must be centered.
+                    FloatRect destRect = new FloatRect(
+                        0.5f * (myUIManager.ScreenSize.X - myStyle.BackgroundImage.Size.X),
+                        0.5f * (myUIManager.ScreenSize.Y - myStyle.BackgroundImage.Size.Y),
+                        myStyle.BackgroundImage.Size.X,
+                        myStyle.BackgroundImage.Size.Y);
+                    myUIManager.Painter.DrawImage(part.SourceTexture, destRect, part.SourceRectangle);
+                }
+
+                myUIManager.Painter.End();
+            }
+
             myUIManager.Render();
         }
     }

@@ -35,9 +35,7 @@ namespace NOubliezPas
 
         bool waiting = true;
 
-        protected bool displaySubtitleIfNotHole = true;
         Subtitle prevSubtitle = null;
-        bool sentWaitingForAnswerNotif = false;
         bool waitingForAnswer = false;
 
         List<String> myCurrentFillUps = null;
@@ -148,22 +146,21 @@ namespace NOubliezPas
 
             if ( !atEnd )
             {
+                if (!waiting && !waitingForAnswer)
+                    if (args.Code == Keyboard.Key.Space)
+                        Stop();
+
                 if (!waitingForAnswer)
                 {
                     if (args.Code == Keyboard.Key.Return)
                     {
                         if (waiting)
-                        {
-                            waiting = false;
-                            mySong.Music.Play();
-                            totTime.Start();
-                        }
+                            Resume();
                     }
                 }
                 else//waiting for answer&&!atEnd
                 {
-                    if (args.Code == Keyboard.Key.Return
-                        || args.Code == Keyboard.Key.Space )// validation de la réponse
+                    if (args.Code == Keyboard.Key.Return )// validation de la réponse
                         ValidateAnswer();
 
                     // validation de mots supplémentaires/en moins au clavier
@@ -182,24 +179,34 @@ namespace NOubliezPas
             }
             else// at end
             {
-                if (waiting)// waiting
-                {
-                    if (args.Code == Keyboard.Key.Return)
-                        DoTransition();
-                }
+                if (args.Code == Keyboard.Key.Return)
+                    DoTransition();
             }
+        }
+
+        private void Stop()
+        {
+            waiting = true;
+            mySong.Music.Pause();
+            totTime.Stop();
+        }
+
+        private void Resume()
+        {
+            waiting = false;
+            mySong.Music.Play();
+            totTime.Start();
         }
 
         public void ValidateAnswer()
         {
             waitingForAnswer = false;
-            sentWaitingForAnswerNotif = false;
 
             float t = (float)(totTime.ElapsedMilliseconds / 1000d);
             int index = mySong.Lyrics.AtTime(0, t);
             validated = index;
-            mySong.Music.Play();
-            totTime.Start();
+
+            Resume();
         }
 
         protected virtual void DoTransition()
@@ -254,7 +261,7 @@ namespace NOubliezPas
             playerScoreLabel = new Label(myUIManager, null, myFont, myPlayer.Name + "   " + myPlayer.Score);
             playerScoreLabel.Tint = Color.White;
             playerScoreLabel.Visible = true;
-            playerScoreLabelFrame.Position = new Vector2f(10f, 10f);
+            playerScoreLabelFrame.Position = new Vector2f(50f, 20f);
             playerScoreLabelFrame.ContainedWidget = playerScoreLabel;
 
             Frame songNameFrame = new Frame(myUIManager, null);
@@ -264,8 +271,11 @@ namespace NOubliezPas
             Label songNameLabel = new Label(myUIManager, null, myFont, mySong.Name);
             songNameLabel.Tint = Color.White;
             songNameLabel.Visible = true;
-            songNameFrame.Position = new Vector2f(0.5f * (myUIManager.ScreenSize.X - songNameFrame.Size.X), (1f/8f) * myUIManager.ScreenSize.X - 0.5f* songNameFrame.Size.Y );
             songNameFrame.ContainedWidget = songNameLabel;
+
+            
+            songNameFrame.TopRightPosition = new Vector2f(myUIManager.ScreenSize.X - 50f, 20f);
+            //songNameFrame.Position = new Vector2f(0.5f * (myUIManager.ScreenSize.X - songNameFrame.Size.X), (1f/8f) * myUIManager.ScreenSize.Y - 0.5f* songNameFrame.Size.Y );
 
             lyricsLabelFrame = new Frame(myUIManager, null);
             lyricsLabelFrame.BordersImagesParts = textures;
@@ -354,6 +364,14 @@ namespace NOubliezPas
 
         public void Update(Stopwatch time)
         {
+            // updates the score of the player
+            
+            if (myPlayer.Score > 0)
+                playerScoreLabel.Text = myPlayer.Name + " " + myPlayer.Score;
+            else
+                playerScoreLabel.Text = myPlayer.Name;
+
+
             myUIManager.Update(time);
 
             float t = (float)(totTime.ElapsedMilliseconds / 1000d);
@@ -371,13 +389,16 @@ namespace NOubliezPas
 
                 if ( sub != null )
                 {
+                    // so that the frame fits perfeclty the subtitle
+                    lyricsLabelFrame.Size = new Vector2f(0f, 0f);
+                    lyricsLabel.Size = new Vector2f(0f, 0f);
+
                     if (sub.ContainHole)
                     {
                         if (validated < index)// on attend la réponse
                         {
                             waitingForAnswer = true;
-                            mySong.Music.Pause();
-                            totTime.Stop();
+                            Stop();
                         }
 
                         if (waitingForAnswer)
@@ -393,9 +414,7 @@ namespace NOubliezPas
 
                 if (lyricsLabel.Text == "")
                     lyricsLabelFrame.Visible = false;
-                else if (sub.ContainHole == false)
-                    lyricsLabelFrame.Visible = displaySubtitleIfNotHole;
-                else// contains hole
+                else
                     lyricsLabelFrame.Visible = true;
 
                 lyricsLabelFrame.CenterPosition = new Vector2f(0.5f * myApp.window.Size.X, 0.75f * myApp.window.Size.Y);
@@ -406,10 +425,10 @@ namespace NOubliezPas
                 waiting = true;
             }
 
-            if (waitingForAnswer && !sentWaitingForAnswerNotif)
+            if (waitingForAnswer)// && !sentWaitingForAnswerNotif)
             {
                 myApp.OurGameToControllerPipe.SendMessage(GameToControllerWindowMessage.ApplicationWaitingAnswer);
-                sentWaitingForAnswerNotif = true;
+                Thread.Sleep(10);
             }
         }
 

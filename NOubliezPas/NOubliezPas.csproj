@@ -69,6 +69,7 @@
     <Compile Include="Communication\ControllerToGameMessagePipe.cs" />
     <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\FullscreeModeController.cs" />
+    <Compile Include="Controllers\PlayerScoreController.cs" />
     <Compile Include="Controllers\SongTestController.cs" />
     <Compile Include="GUILauncher.cs" />
     <Compile Include="Communication\GameToControllerMessagePipe.cs" />

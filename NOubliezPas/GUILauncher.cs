@@ -24,7 +24,7 @@ namespace NOubliezPas
         Window myWin = null;
         VBox vBox = null;
 
-        FullscreeModeController myFullscreenModeController = null;
+        PlayerScoreController myPlayerScoreController = null;
         SongTestController mySongTestController = null;
 
         public GUILauncher(
@@ -56,10 +56,6 @@ namespace NOubliezPas
 
                 if (msg == GameToControllerWindowMessage.ApplicationQuit)
                     OnReceiveQuitMessage();
-                else if (msg == GameToControllerWindowMessage.GoneFullscreen)
-                    myFullscreenModeController.OnClientEvent(this, args);
-                else if (msg == GameToControllerWindowMessage.GoneWindowed)
-                    myFullscreenModeController.OnClientEvent(this, args);
                 else
                     mySongTestController.OnClientEvent(this, args);
             }
@@ -84,8 +80,9 @@ namespace NOubliezPas
             vBox = new VBox();
             myWin.Add(vBox);
 
-            //myFullscreenModeController = new FullscreeModeController(this);
-            //vBox.Add(myFullscreenModeController.GetPaneBox());
+
+            myPlayerScoreController = new PlayerScoreController(this);
+            vBox.Add(myPlayerScoreController.GetPaneBox());
 
             mySongTestController = new SongTestController(this);
             vBox.Add(mySongTestController.GetPaneBox());

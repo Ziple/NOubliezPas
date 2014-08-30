@@ -45,16 +45,8 @@ namespace NOubliezPas.Controllers
             this.ShowAll();
         }
 
-        public override void ReadMessage(GameToControllerMessage msg)
+        public override void ReadMessage(GameToControllerWindowMessage msg)
         {
-            if( msg.GetType() == typeof(GameToControllerMessagePlayerScoreChanged) )
-            {
-                List<Player> players = myGUILauncher.OurGameApp.GameState.Players;
-                for( int i = 0; i < players.Count; i++)
-                {
-                    mySpinButtons[i].Value = (double)players[i].Score;
-                }
-            }
         }
 
         public void OnPlayerScoreEntryChanged( object o, EventArgs a )
@@ -70,8 +62,6 @@ namespace NOubliezPas.Controllers
             {
                 List<Player> players = myGUILauncher.OurGameApp.GameState.Players;
                 players[index].Score = sp.ValueAsInt;
-
-                myGUILauncher.SendMessage(new ControllerToGamePlayerScoreChanged());
             }
         }
     }

@@ -26,6 +26,7 @@ namespace NOubliezPas
 
         int currentChoice = 0;
         List<HorizontalLayout> themes = new List<HorizontalLayout>();
+        List<Label> playersScoresLabels = new List<Label>();
 
         bool displayScores = false;
 
@@ -339,9 +340,10 @@ namespace NOubliezPas
                             str += "   " + player.Score.ToString();
 
                         Label scoreLabel = new Label(myUIManager, playerNameFrame, myFont, str, fontSize);
+                        playersScoresLabels.Add(scoreLabel);
 
                         if (player == myPlayer)
-                            scoreLabel.Tint = Color.Black;
+                            scoreLabel.Tint = myStyle.FontHoveredColor;
                         else
                             scoreLabel.Tint = myStyle.FontNormalColor;
 
@@ -369,6 +371,26 @@ namespace NOubliezPas
 
         public void Update(Stopwatch time)
         {
+            bool displayScores = false;
+            foreach( Player pl in myGame.Players )
+                if( pl.Score > 0 )
+                {
+                    displayScores = true;
+                    break;
+                }
+
+            for (int i = 0; i < myGame.Players.Count; i++ )
+            {
+                Player pl = myGame.Players[i];
+                Label l = playersScoresLabels[i];
+                if (displayScores)
+                    l.Text = pl.Name + " " + pl.Score;
+                else
+                    l.Text = pl.Name;
+            }
+
+            FitFrames();
+
             myUIManager.Update(time);
         }
 
